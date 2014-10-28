@@ -4,11 +4,17 @@ var _ = require('underscore');
 var loader = require('./loader');
 var DataView = require('./components/DataView');
 var ListView = require('./components/ListView');
+var HomeView = require('./components/HomeView');
 
 var Router = Backbone.Router.extend({
   routes: {
+    '': 'home',
     ':id': 'showById',
     'list/:type': 'list'
+  },
+
+  home: function() {
+    showPage(new HomeView());
   },
 
   showById: function(id) {

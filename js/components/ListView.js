@@ -1,5 +1,6 @@
 var React = require('react');
 var _ = require('underscore');
+var Markdown = require('./Markdown');
 
 module.exports = React.createClass({
   render: function() {
@@ -10,7 +11,7 @@ module.exports = React.createClass({
         <div className="item" key={title}>
           <div className="content">
             <a className="header" href={'#' + entry.searchTerm}>{title}</a>
-            <div className="description">{entry.description}</div>
+            <div className="description"><Markdown content={entry.description}/></div>
           </div>
         </div>
       );
@@ -18,7 +19,7 @@ module.exports = React.createClass({
 
     return (
       <div>
-        <h2>{data.headerPlural}</h2>
+        <h2 className="ui header">{data.headerPlural}</h2>
         <div className="ui list">
           {children}
         </div>
