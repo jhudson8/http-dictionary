@@ -1,0 +1,33 @@
+{
+  "name": "http-dictionary",
+  "version": "0.0.1",
+  "description": "UI viewer application for http status codes and headers",
+  "main": "package.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "http",
+    "status",
+    "code",
+    "header"
+  ],
+  "author": "Joe Hudson",
+  "license": "MIT",
+  "dependencies": {
+    "know-your-http-well": "*",
+    "underscore": "*",
+    "underscore.string": "*",
+    "jquery": "*",
+    "react": "*",
+    "backbone": "*"
+  },
+  "devDependencies": {
+    "jsx-loader": "*",
+    "json-loader": "*",
+    "file-loader": "*",
+    "url-loader": "*",
+    "less-loader": "*",
+    "semantic-ui": "*"
+  }
+}
