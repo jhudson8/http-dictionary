@@ -38,6 +38,7 @@ var Router = Backbone.Router.extend({
 });
 
 function showPage(view) {
+  React.unmountComponentAtNode(document.getElementById('page'));
   React.renderComponent(view, document.getElementById('page'));
 }
 

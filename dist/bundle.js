@@ -52,11 +52,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */// env setup
-	window.jQuery = __webpack_require__(8);
+	window.jQuery = __webpack_require__(10);
 	__webpack_require__(4);
 	var _ = __webpack_require__(7);
-	var $ = __webpack_require__(8);
-	var React = __webpack_require__(13);
+	var $ = __webpack_require__(10);
+	var React = __webpack_require__(8);
 	var Backbone = __webpack_require__(9);
 
 	// components
@@ -127,13 +127,13 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/** @jsx React.DOM */var React = __webpack_require__(13);
+	/** @jsx React.DOM */var React = __webpack_require__(8);
 	var Backbone = __webpack_require__(9);
 	var _ = __webpack_require__(7);
 	var loader = __webpack_require__(2);
-	var DataView = __webpack_require__(10);
-	var ListView = __webpack_require__(11);
-	var HomeView = __webpack_require__(12);
+	var DataView = __webpack_require__(11);
+	var ListView = __webpack_require__(12);
+	var HomeView = __webpack_require__(13);
 
 	var Router = Backbone.Router.extend({
 	  routes: {
@@ -167,6 +167,7 @@
 	});
 
 	function showPage(view) {
+	  React.unmountComponentAtNode(document.getElementById('page'));
 	  React.renderComponent(view, document.getElementById('page'));
 	}
 
@@ -1963,7 +1964,7 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/** @jsx React.DOM */var React = __webpack_require__(13);
+	/** @jsx React.DOM */var React = __webpack_require__(8);
 	var _ = __webpack_require__(7);
 
 	module.exports = React.createClass({displayName: 'exports',
@@ -1991,8 +1992,8 @@
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/** @jsx React.DOM */var $ = __webpack_require__(8);
-	var React = __webpack_require__(13);
+	/** @jsx React.DOM */var $ = __webpack_require__(10);
+	var React = __webpack_require__(8);
 	var Backbone = __webpack_require__(9);
 	var _str = __webpack_require__(15);
 	var _ = __webpack_require__(7);
@@ -3494,6 +3495,1627 @@
 
 /***/ },
 /* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM */module.exports = __webpack_require__(16);
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/** @jsx React.DOM *///     Backbone.js 1.1.2
+
+	//     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+	//     Backbone may be freely distributed under the MIT license.
+	//     For all details and documentation:
+	//     http://backbonejs.org
+
+	(function(root, factory) {
+
+	  // Set up Backbone appropriately for the environment. Start with AMD.
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7), __webpack_require__(10), exports], __WEBPACK_AMD_DEFINE_RESULT__ = function(_, $, exports) {
+	      // Export global even in AMD case in case this script is loaded with
+	      // others that may still expect a global Backbone.
+	      root.Backbone = factory(root, exports, _, $);
+	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+	  // Next for Node.js or CommonJS. jQuery may not be needed as a module.
+	  } else if (typeof exports !== 'undefined') {
+	    var _ = require('underscore');
+	    factory(root, exports, _);
+
+	  // Finally, as a browser global.
+	  } else {
+	    root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
+	  }
+
+	}(this, function(root, Backbone, _, $) {
+
+	  // Initial Setup
+	  // -------------
+
+	  // Save the previous value of the `Backbone` variable, so that it can be
+	  // restored later on, if `noConflict` is used.
+	  var previousBackbone = root.Backbone;
+
+	  // Create local references to array methods we'll want to use later.
+	  var array = [];
+	  var push = array.push;
+	  var slice = array.slice;
+	  var splice = array.splice;
+
+	  // Current version of the library. Keep in sync with `package.json`.
+	  Backbone.VERSION = '1.1.2';
+
+	  // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
+	  // the `$` variable.
+	  Backbone.$ = $;
+
+	  // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
+	  // to its previous owner. Returns a reference to this Backbone object.
+	  Backbone.noConflict = function() {
+	    root.Backbone = previousBackbone;
+	    return this;
+	  };
+
+	  // Turn on `emulateHTTP` to support legacy HTTP servers. Setting this option
+	  // will fake `"PATCH"`, `"PUT"` and `"DELETE"` requests via the `_method` parameter and
+	  // set a `X-Http-Method-Override` header.
+	  Backbone.emulateHTTP = false;
+
+	  // Turn on `emulateJSON` to support legacy servers that can't deal with direct
+	  // `application/json` requests ... will encode the body as
+	  // `application/x-www-form-urlencoded` instead and will send the model in a
+	  // form param named `model`.
+	  Backbone.emulateJSON = false;
+
+	  // Backbone.Events
+	  // ---------------
+
+	  // A module that can be mixed in to *any object* in order to provide it with
+	  // custom events. You may bind with `on` or remove with `off` callback
+	  // functions to an event; `trigger`-ing an event fires all callbacks in
+	  // succession.
+	  //
+	  //     var object = {};
+	  //     _.extend(object, Backbone.Events);
+	  //     object.on('expand', function(){ alert('expanded'); });
+	  //     object.trigger('expand');
+	  //
+	  var Events = Backbone.Events = {
+
+	    // Bind an event to a `callback` function. Passing `"all"` will bind
+	    // the callback to all events fired.
+	    on: function(name, callback, context) {
+	      if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
+	      this._events || (this._events = {});
+	      var events = this._events[name] || (this._events[name] = []);
+	      events.push({callback: callback, context: context, ctx: context || this});
+	      return this;
+	    },
+
+	    // Bind an event to only be triggered a single time. After the first time
+	    // the callback is invoked, it will be removed.
+	    once: function(name, callback, context) {
+	      if (!eventsApi(this, 'once', name, [callback, context]) || !callback) return this;
+	      var self = this;
+	      var once = _.once(function() {
+	        self.off(name, once);
+	        callback.apply(this, arguments);
+	      });
+	      once._callback = callback;
+	      return this.on(name, once, context);
+	    },
+
+	    // Remove one or many callbacks. If `context` is null, removes all
+	    // callbacks with that function. If `callback` is null, removes all
+	    // callbacks for the event. If `name` is null, removes all bound
+	    // callbacks for all events.
+	    off: function(name, callback, context) {
+	      var retain, ev, events, names, i, l, j, k;
+	      if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
+	      if (!name && !callback && !context) {
+	        this._events = void 0;
+	        return this;
+	      }
+	      names = name ? [name] : _.keys(this._events);
+	      for (i = 0, l = names.length; i < l; i++) {
+	        name = names[i];
+	        if (events = this._events[name]) {
+	          this._events[name] = retain = [];
+	          if (callback || context) {
+	            for (j = 0, k = events.length; j < k; j++) {
+	              ev = events[j];
+	              if ((callback && callback !== ev.callback && callback !== ev.callback._callback) ||
+	                  (context && context !== ev.context)) {
+	                retain.push(ev);
+	              }
+	            }
+	          }
+	          if (!retain.length) delete this._events[name];
+	        }
+	      }
+
+	      return this;
+	    },
+
+	    // Trigger one or many events, firing all bound callbacks. Callbacks are
+	    // passed the same arguments as `trigger` is, apart from the event name
+	    // (unless you're listening on `"all"`, which will cause your callback to
+	    // receive the true name of the event as the first argument).
+	    trigger: function(name) {
+	      if (!this._events) return this;
+	      var args = slice.call(arguments, 1);
+	      if (!eventsApi(this, 'trigger', name, args)) return this;
+	      var events = this._events[name];
+	      var allEvents = this._events.all;
+	      if (events) triggerEvents(events, args);
+	      if (allEvents) triggerEvents(allEvents, arguments);
+	      return this;
+	    },
+
+	    // Tell this object to stop listening to either specific events ... or
+	    // to every object it's currently listening to.
+	    stopListening: function(obj, name, callback) {
+	      var listeningTo = this._listeningTo;
+	      if (!listeningTo) return this;
+	      var remove = !name && !callback;
+	      if (!callback && typeof name === 'object') callback = this;
+	      if (obj) (listeningTo = {})[obj._listenId] = obj;
+	      for (var id in listeningTo) {
+	        obj = listeningTo[id];
+	        obj.off(name, callback, this);
+	        if (remove || _.isEmpty(obj._events)) delete this._listeningTo[id];
+	      }
+	      return this;
+	    }
+
+	  };
+
+	  // Regular expression used to split event strings.
+	  var eventSplitter = /\s+/;
+
+	  // Implement fancy features of the Events API such as multiple event
+	  // names `"change blur"` and jQuery-style event maps `{change: action}`
+	  // in terms of the existing API.
+	  var eventsApi = function(obj, action, name, rest) {
+	    if (!name) return true;
+
+	    // Handle event maps.
+	    if (typeof name === 'object') {
+	      for (var key in name) {
+	        obj[action].apply(obj, [key, name[key]].concat(rest));
+	      }
+	      return false;
+	    }
+
+	    // Handle space separated event names.
+	    if (eventSplitter.test(name)) {
+	      var names = name.split(eventSplitter);
+	      for (var i = 0, l = names.length; i < l; i++) {
+	        obj[action].apply(obj, [names[i]].concat(rest));
+	      }
+	      return false;
+	    }
+
+	    return true;
+	  };
+
+	  // A difficult-to-believe, but optimized internal dispatch function for
+	  // triggering events. Tries to keep the usual cases speedy (most internal
+	  // Backbone events have 3 arguments).
+	  var triggerEvents = function(events, args) {
+	    var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
+	    switch (args.length) {
+	      case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
+	      case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
+	      case 2: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
+	      case 3: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
+	      default: while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args); return;
+	    }
+	  };
+
+	  var listenMethods = {listenTo: 'on', listenToOnce: 'once'};
+
+	  // Inversion-of-control versions of `on` and `once`. Tell *this* object to
+	  // listen to an event in another object ... keeping track of what it's
+	  // listening to.
+	  _.each(listenMethods, function(implementation, method) {
+	    Events[method] = function(obj, name, callback) {
+	      var listeningTo = this._listeningTo || (this._listeningTo = {});
+	      var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
+	      listeningTo[id] = obj;
+	      if (!callback && typeof name === 'object') callback = this;
+	      obj[implementation](name, callback, this);
+	      return this;
+	    };
+	  });
+
+	  // Aliases for backwards compatibility.
+	  Events.bind   = Events.on;
+	  Events.unbind = Events.off;
+
+	  // Allow the `Backbone` object to serve as a global event bus, for folks who
+	  // want global "pubsub" in a convenient place.
+	  _.extend(Backbone, Events);
+
+	  // Backbone.Model
+	  // --------------
+
+	  // Backbone **Models** are the basic data object in the framework --
+	  // frequently representing a row in a table in a database on your server.
+	  // A discrete chunk of data and a bunch of useful, related methods for
+	  // performing computations and transformations on that data.
+
+	  // Create a new model with the specified attributes. A client id (`cid`)
+	  // is automatically generated and assigned for you.
+	  var Model = Backbone.Model = function(attributes, options) {
+	    var attrs = attributes || {};
+	    options || (options = {});
+	    this.cid = _.uniqueId('c');
+	    this.attributes = {};
+	    if (options.collection) this.collection = options.collection;
+	    if (options.parse) attrs = this.parse(attrs, options) || {};
+	    attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
+	    this.set(attrs, options);
+	    this.changed = {};
+	    this.initialize.apply(this, arguments);
+	  };
+
+	  // Attach all inheritable methods to the Model prototype.
+	  _.extend(Model.prototype, Events, {
+
+	    // A hash of attributes whose current and previous value differ.
+	    changed: null,
+
+	    // The value returned during the last failed validation.
+	    validationError: null,
+
+	    // The default name for the JSON `id` attribute is `"id"`. MongoDB and
+	    // CouchDB users may want to set this to `"_id"`.
+	    idAttribute: 'id',
+
+	    // Initialize is an empty function by default. Override it with your own
+	    // initialization logic.
+	    initialize: function(){},
+
+	    // Return a copy of the model's `attributes` object.
+	    toJSON: function(options) {
+	      return _.clone(this.attributes);
+	    },
+
+	    // Proxy `Backbone.sync` by default -- but override this if you need
+	    // custom syncing semantics for *this* particular model.
+	    sync: function() {
+	      return Backbone.sync.apply(this, arguments);
+	    },
+
+	    // Get the value of an attribute.
+	    get: function(attr) {
+	      return this.attributes[attr];
+	    },
+
+	    // Get the HTML-escaped value of an attribute.
+	    escape: function(attr) {
+	      return _.escape(this.get(attr));
+	    },
+
+	    // Returns `true` if the attribute contains a value that is not null
+	    // or undefined.
+	    has: function(attr) {
+	      return this.get(attr) != null;
+	    },
+
+	    // Set a hash of model attributes on the object, firing `"change"`. This is
+	    // the core primitive operation of a model, updating the data and notifying
+	    // anyone who needs to know about the change in state. The heart of the beast.
+	    set: function(key, val, options) {
+	      var attr, attrs, unset, changes, silent, changing, prev, current;
+	      if (key == null) return this;
+
+	      // Handle both `"key", value` and `{key: value}` -style arguments.
+	      if (typeof key === 'object') {
+	        attrs = key;
+	        options = val;
+	      } else {
+	        (attrs = {})[key] = val;
+	      }
+
+	      options || (options = {});
+
+	      // Run validation.
+	      if (!this._validate(attrs, options)) return false;
+
+	      // Extract attributes and options.
+	      unset           = options.unset;
+	      silent          = options.silent;
+	      changes         = [];
+	      changing        = this._changing;
+	      this._changing  = true;
+
+	      if (!changing) {
+	        this._previousAttributes = _.clone(this.attributes);
+	        this.changed = {};
+	      }
+	      current = this.attributes, prev = this._previousAttributes;
+
+	      // Check for changes of `id`.
+	      if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
+
+	      // For each `set` attribute, update or delete the current value.
+	      for (attr in attrs) {
+	        val = attrs[attr];
+	        if (!_.isEqual(current[attr], val)) changes.push(attr);
+	        if (!_.isEqual(prev[attr], val)) {
+	          this.changed[attr] = val;
+	        } else {
+	          delete this.changed[attr];
+	        }
+	        unset ? delete current[attr] : current[attr] = val;
+	      }
+
+	      // Trigger all relevant attribute changes.
+	      if (!silent) {
+	        if (changes.length) this._pending = options;
+	        for (var i = 0, l = changes.length; i < l; i++) {
+	          this.trigger('change:' + changes[i], this, current[changes[i]], options);
+	        }
+	      }
+
+	      // You might be wondering why there's a `while` loop here. Changes can
+	      // be recursively nested within `"change"` events.
+	      if (changing) return this;
+	      if (!silent) {
+	        while (this._pending) {
+	          options = this._pending;
+	          this._pending = false;
+	          this.trigger('change', this, options);
+	        }
+	      }
+	      this._pending = false;
+	      this._changing = false;
+	      return this;
+	    },
+
+	    // Remove an attribute from the model, firing `"change"`. `unset` is a noop
+	    // if the attribute doesn't exist.
+	    unset: function(attr, options) {
+	      return this.set(attr, void 0, _.extend({}, options, {unset: true}));
+	    },
+
+	    // Clear all attributes on the model, firing `"change"`.
+	    clear: function(options) {
+	      var attrs = {};
+	      for (var key in this.attributes) attrs[key] = void 0;
+	      return this.set(attrs, _.extend({}, options, {unset: true}));
+	    },
+
+	    // Determine if the model has changed since the last `"change"` event.
+	    // If you specify an attribute name, determine if that attribute has changed.
+	    hasChanged: function(attr) {
+	      if (attr == null) return !_.isEmpty(this.changed);
+	      return _.has(this.changed, attr);
+	    },
+
+	    // Return an object containing all the attributes that have changed, or
+	    // false if there are no changed attributes. Useful for determining what
+	    // parts of a view need to be updated and/or what attributes need to be
+	    // persisted to the server. Unset attributes will be set to undefined.
+	    // You can also pass an attributes object to diff against the model,
+	    // determining if there *would be* a change.
+	    changedAttributes: function(diff) {
+	      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
+	      var val, changed = false;
+	      var old = this._changing ? this._previousAttributes : this.attributes;
+	      for (var attr in diff) {
+	        if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+	        (changed || (changed = {}))[attr] = val;
+	      }
+	      return changed;
+	    },
+
+	    // Get the previous value of an attribute, recorded at the time the last
+	    // `"change"` event was fired.
+	    previous: function(attr) {
+	      if (attr == null || !this._previousAttributes) return null;
+	      return this._previousAttributes[attr];
+	    },
+
+	    // Get all of the attributes of the model at the time of the previous
+	    // `"change"` event.
+	    previousAttributes: function() {
+	      return _.clone(this._previousAttributes);
+	    },
+
+	    // Fetch the model from the server. If the server's representation of the
+	    // model differs from its current attributes, they will be overridden,
+	    // triggering a `"change"` event.
+	    fetch: function(options) {
+	      options = options ? _.clone(options) : {};
+	      if (options.parse === void 0) options.parse = true;
+	      var model = this;
+	      var success = options.success;
+	      options.success = function(resp) {
+	        if (!model.set(model.parse(resp, options), options)) return false;
+	        if (success) success(model, resp, options);
+	        model.trigger('sync', model, resp, options);
+	      };
+	      wrapError(this, options);
+	      return this.sync('read', this, options);
+	    },
+
+	    // Set a hash of model attributes, and sync the model to the server.
+	    // If the server returns an attributes hash that differs, the model's
+	    // state will be `set` again.
+	    save: function(key, val, options) {
+	      var attrs, method, xhr, attributes = this.attributes;
+
+	      // Handle both `"key", value` and `{key: value}` -style arguments.
+	      if (key == null || typeof key === 'object') {
+	        attrs = key;
+	        options = val;
+	      } else {
+	        (attrs = {})[key] = val;
+	      }
+
+	      options = _.extend({validate: true}, options);
+
+	      // If we're not waiting and attributes exist, save acts as
+	      // `set(attr).save(null, opts)` with validation. Otherwise, check if
+	      // the model will be valid when the attributes, if any, are set.
+	      if (attrs && !options.wait) {
+	        if (!this.set(attrs, options)) return false;
+	      } else {
+	        if (!this._validate(attrs, options)) return false;
+	      }
+
+	      // Set temporary attributes if `{wait: true}`.
+	      if (attrs && options.wait) {
+	        this.attributes = _.extend({}, attributes, attrs);
+	      }
+
+	      // After a successful server-side save, the client is (optionally)
+	      // updated with the server-side state.
+	      if (options.parse === void 0) options.parse = true;
+	      var model = this;
+	      var success = options.success;
+	      options.success = function(resp) {
+	        // Ensure attributes are restored during synchronous saves.
+	        model.attributes = attributes;
+	        var serverAttrs = model.parse(resp, options);
+	        if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
+	        if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+	          return false;
+	        }
+	        if (success) success(model, resp, options);
+	        model.trigger('sync', model, resp, options);
+	      };
+	      wrapError(this, options);
+
+	      method = this.isNew() ? 'create' : (options.patch ? 'patch' : 'update');
+	      if (method === 'patch') options.attrs = attrs;
+	      xhr = this.sync(method, this, options);
+
+	      // Restore attributes.
+	      if (attrs && options.wait) this.attributes = attributes;
+
+	      return xhr;
+	    },
+
+	    // Destroy this model on the server if it was already persisted.
+	    // Optimistically removes the model from its collection, if it has one.
+	    // If `wait: true` is passed, waits for the server to respond before removal.
+	    destroy: function(options) {
+	      options = options ? _.clone(options) : {};
+	      var model = this;
+	      var success = options.success;
+
+	      var destroy = function() {
+	        model.trigger('destroy', model, model.collection, options);
+	      };
+
+	      options.success = function(resp) {
+	        if (options.wait || model.isNew()) destroy();
+	        if (success) success(model, resp, options);
+	        if (!model.isNew()) model.trigger('sync', model, resp, options);
+	      };
+
+	      if (this.isNew()) {
+	        options.success();
+	        return false;
+	      }
+	      wrapError(this, options);
+
+	      var xhr = this.sync('delete', this, options);
+	      if (!options.wait) destroy();
+	      return xhr;
+	    },
+
+	    // Default URL for the model's representation on the server -- if you're
+	    // using Backbone's restful methods, override this to change the endpoint
+	    // that will be called.
+	    url: function() {
+	      var base =
+	        _.result(this, 'urlRoot') ||
+	        _.result(this.collection, 'url') ||
+	        urlError();
+	      if (this.isNew()) return base;
+	      return base.replace(/([^\/])$/, '$1/') + encodeURIComponent(this.id);
+	    },
+
+	    // **parse** converts a response into the hash of attributes to be `set` on
+	    // the model. The default implementation is just to pass the response along.
+	    parse: function(resp, options) {
+	      return resp;
+	    },
+
+	    // Create a new model with identical attributes to this one.
+	    clone: function() {
+	      return new this.constructor(this.attributes);
+	    },
+
+	    // A model is new if it has never been saved to the server, and lacks an id.
+	    isNew: function() {
+	      return !this.has(this.idAttribute);
+	    },
+
+	    // Check if the model is currently in a valid state.
+	    isValid: function(options) {
+	      return this._validate({}, _.extend(options || {}, { validate: true }));
+	    },
+
+	    // Run validation against the next complete set of model attributes,
+	    // returning `true` if all is well. Otherwise, fire an `"invalid"` event.
+	    _validate: function(attrs, options) {
+	      if (!options.validate || !this.validate) return true;
+	      attrs = _.extend({}, this.attributes, attrs);
+	      var error = this.validationError = this.validate(attrs, options) || null;
+	      if (!error) return true;
+	      this.trigger('invalid', this, error, _.extend(options, {validationError: error}));
+	      return false;
+	    }
+
+	  });
+
+	  // Underscore methods that we want to implement on the Model.
+	  var modelMethods = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
+
+	  // Mix in each Underscore method as a proxy to `Model#attributes`.
+	  _.each(modelMethods, function(method) {
+	    Model.prototype[method] = function() {
+	      var args = slice.call(arguments);
+	      args.unshift(this.attributes);
+	      return _[method].apply(_, args);
+	    };
+	  });
+
+	  // Backbone.Collection
+	  // -------------------
+
+	  // If models tend to represent a single row of data, a Backbone Collection is
+	  // more analagous to a table full of data ... or a small slice or page of that
+	  // table, or a collection of rows that belong together for a particular reason
+	  // -- all of the messages in this particular folder, all of the documents
+	  // belonging to this particular author, and so on. Collections maintain
+	  // indexes of their models, both in order, and for lookup by `id`.
+
+	  // Create a new **Collection**, perhaps to contain a specific type of `model`.
+	  // If a `comparator` is specified, the Collection will maintain
+	  // its models in sort order, as they're added and removed.
+	  var Collection = Backbone.Collection = function(models, options) {
+	    options || (options = {});
+	    if (options.model) this.model = options.model;
+	    if (options.comparator !== void 0) this.comparator = options.comparator;
+	    this._reset();
+	    this.initialize.apply(this, arguments);
+	    if (models) this.reset(models, _.extend({silent: true}, options));
+	  };
+
+	  // Default options for `Collection#set`.
+	  var setOptions = {add: true, remove: true, merge: true};
+	  var addOptions = {add: true, remove: false};
+
+	  // Define the Collection's inheritable methods.
+	  _.extend(Collection.prototype, Events, {
+
+	    // The default model for a collection is just a **Backbone.Model**.
+	    // This should be overridden in most cases.
+	    model: Model,
+
+	    // Initialize is an empty function by default. Override it with your own
+	    // initialization logic.
+	    initialize: function(){},
+
+	    // The JSON representation of a Collection is an array of the
+	    // models' attributes.
+	    toJSON: function(options) {
+	      return this.map(function(model){ return model.toJSON(options); });
+	    },
+
+	    // Proxy `Backbone.sync` by default.
+	    sync: function() {
+	      return Backbone.sync.apply(this, arguments);
+	    },
+
+	    // Add a model, or list of models to the set.
+	    add: function(models, options) {
+	      return this.set(models, _.extend({merge: false}, options, addOptions));
+	    },
+
+	    // Remove a model, or a list of models from the set.
+	    remove: function(models, options) {
+	      var singular = !_.isArray(models);
+	      models = singular ? [models] : _.clone(models);
+	      options || (options = {});
+	      var i, l, index, model;
+	      for (i = 0, l = models.length; i < l; i++) {
+	        model = models[i] = this.get(models[i]);
+	        if (!model) continue;
+	        delete this._byId[model.id];
+	        delete this._byId[model.cid];
+	        index = this.indexOf(model);
+	        this.models.splice(index, 1);
+	        this.length--;
+	        if (!options.silent) {
+	          options.index = index;
+	          model.trigger('remove', model, this, options);
+	        }
+	        this._removeReference(model, options);
+	      }
+	      return singular ? models[0] : models;
+	    },
+
+	    // Update a collection by `set`-ing a new list of models, adding new ones,
+	    // removing models that are no longer present, and merging models that
+	    // already exist in the collection, as necessary. Similar to **Model#set**,
+	    // the core operation for updating the data contained by the collection.
+	    set: function(models, options) {
+	      options = _.defaults({}, options, setOptions);
+	      if (options.parse) models = this.parse(models, options);
+	      var singular = !_.isArray(models);
+	      models = singular ? (models ? [models] : []) : _.clone(models);
+	      var i, l, id, model, attrs, existing, sort;
+	      var at = options.at;
+	      var targetModel = this.model;
+	      var sortable = this.comparator && (at == null) && options.sort !== false;
+	      var sortAttr = _.isString(this.comparator) ? this.comparator : null;
+	      var toAdd = [], toRemove = [], modelMap = {};
+	      var add = options.add, merge = options.merge, remove = options.remove;
+	      var order = !sortable && add && remove ? [] : false;
+
+	      // Turn bare objects into model references, and prevent invalid models
+	      // from being added.
+	      for (i = 0, l = models.length; i < l; i++) {
+	        attrs = models[i] || {};
+	        if (attrs instanceof Model) {
+	          id = model = attrs;
+	        } else {
+	          id = attrs[targetModel.prototype.idAttribute || 'id'];
+	        }
+
+	        // If a duplicate is found, prevent it from being added and
+	        // optionally merge it into the existing model.
+	        if (existing = this.get(id)) {
+	          if (remove) modelMap[existing.cid] = true;
+	          if (merge) {
+	            attrs = attrs === model ? model.attributes : attrs;
+	            if (options.parse) attrs = existing.parse(attrs, options);
+	            existing.set(attrs, options);
+	            if (sortable && !sort && existing.hasChanged(sortAttr)) sort = true;
+	          }
+	          models[i] = existing;
+
+	        // If this is a new, valid model, push it to the `toAdd` list.
+	        } else if (add) {
+	          model = models[i] = this._prepareModel(attrs, options);
+	          if (!model) continue;
+	          toAdd.push(model);
+	          this._addReference(model, options);
+	        }
+
+	        // Do not add multiple models with the same `id`.
+	        model = existing || model;
+	        if (order && (model.isNew() || !modelMap[model.id])) order.push(model);
+	        modelMap[model.id] = true;
+	      }
+
+	      // Remove nonexistent models if appropriate.
+	      if (remove) {
+	        for (i = 0, l = this.length; i < l; ++i) {
+	          if (!modelMap[(model = this.models[i]).cid]) toRemove.push(model);
+	        }
+	        if (toRemove.length) this.remove(toRemove, options);
+	      }
+
+	      // See if sorting is needed, update `length` and splice in new models.
+	      if (toAdd.length || (order && order.length)) {
+	        if (sortable) sort = true;
+	        this.length += toAdd.length;
+	        if (at != null) {
+	          for (i = 0, l = toAdd.length; i < l; i++) {
+	            this.models.splice(at + i, 0, toAdd[i]);
+	          }
+	        } else {
+	          if (order) this.models.length = 0;
+	          var orderedModels = order || toAdd;
+	          for (i = 0, l = orderedModels.length; i < l; i++) {
+	            this.models.push(orderedModels[i]);
+	          }
+	        }
+	      }
+
+	      // Silently sort the collection if appropriate.
+	      if (sort) this.sort({silent: true});
+
+	      // Unless silenced, it's time to fire all appropriate add/sort events.
+	      if (!options.silent) {
+	        for (i = 0, l = toAdd.length; i < l; i++) {
+	          (model = toAdd[i]).trigger('add', model, this, options);
+	        }
+	        if (sort || (order && order.length)) this.trigger('sort', this, options);
+	      }
+
+	      // Return the added (or merged) model (or models).
+	      return singular ? models[0] : models;
+	    },
+
+	    // When you have more items than you want to add or remove individually,
+	    // you can reset the entire set with a new list of models, without firing
+	    // any granular `add` or `remove` events. Fires `reset` when finished.
+	    // Useful for bulk operations and optimizations.
+	    reset: function(models, options) {
+	      options || (options = {});
+	      for (var i = 0, l = this.models.length; i < l; i++) {
+	        this._removeReference(this.models[i], options);
+	      }
+	      options.previousModels = this.models;
+	      this._reset();
+	      models = this.add(models, _.extend({silent: true}, options));
+	      if (!options.silent) this.trigger('reset', this, options);
+	      return models;
+	    },
+
+	    // Add a model to the end of the collection.
+	    push: function(model, options) {
+	      return this.add(model, _.extend({at: this.length}, options));
+	    },
+
+	    // Remove a model from the end of the collection.
+	    pop: function(options) {
+	      var model = this.at(this.length - 1);
+	      this.remove(model, options);
+	      return model;
+	    },
+
+	    // Add a model to the beginning of the collection.
+	    unshift: function(model, options) {
+	      return this.add(model, _.extend({at: 0}, options));
+	    },
+
+	    // Remove a model from the beginning of the collection.
+	    shift: function(options) {
+	      var model = this.at(0);
+	      this.remove(model, options);
+	      return model;
+	    },
+
+	    // Slice out a sub-array of models from the collection.
+	    slice: function() {
+	      return slice.apply(this.models, arguments);
+	    },
+
+	    // Get a model from the set by id.
+	    get: function(obj) {
+	      if (obj == null) return void 0;
+	      return this._byId[obj] || this._byId[obj.id] || this._byId[obj.cid];
+	    },
+
+	    // Get the model at the given index.
+	    at: function(index) {
+	      return this.models[index];
+	    },
+
+	    // Return models with matching attributes. Useful for simple cases of
+	    // `filter`.
+	    where: function(attrs, first) {
+	      if (_.isEmpty(attrs)) return first ? void 0 : [];
+	      return this[first ? 'find' : 'filter'](function(model) {
+	        for (var key in attrs) {
+	          if (attrs[key] !== model.get(key)) return false;
+	        }
+	        return true;
+	      });
+	    },
+
+	    // Return the first model with matching attributes. Useful for simple cases
+	    // of `find`.
+	    findWhere: function(attrs) {
+	      return this.where(attrs, true);
+	    },
+
+	    // Force the collection to re-sort itself. You don't need to call this under
+	    // normal circumstances, as the set will maintain sort order as each item
+	    // is added.
+	    sort: function(options) {
+	      if (!this.comparator) throw new Error('Cannot sort a set without a comparator');
+	      options || (options = {});
+
+	      // Run sort based on type of `comparator`.
+	      if (_.isString(this.comparator) || this.comparator.length === 1) {
+	        this.models = this.sortBy(this.comparator, this);
+	      } else {
+	        this.models.sort(_.bind(this.comparator, this));
+	      }
+
+	      if (!options.silent) this.trigger('sort', this, options);
+	      return this;
+	    },
+
+	    // Pluck an attribute from each model in the collection.
+	    pluck: function(attr) {
+	      return _.invoke(this.models, 'get', attr);
+	    },
+
+	    // Fetch the default set of models for this collection, resetting the
+	    // collection when they arrive. If `reset: true` is passed, the response
+	    // data will be passed through the `reset` method instead of `set`.
+	    fetch: function(options) {
+	      options = options ? _.clone(options) : {};
+	      if (options.parse === void 0) options.parse = true;
+	      var success = options.success;
+	      var collection = this;
+	      options.success = function(resp) {
+	        var method = options.reset ? 'reset' : 'set';
+	        collection[method](resp, options);
+	        if (success) success(collection, resp, options);
+	        collection.trigger('sync', collection, resp, options);
+	      };
+	      wrapError(this, options);
+	      return this.sync('read', this, options);
+	    },
+
+	    // Create a new instance of a model in this collection. Add the model to the
+	    // collection immediately, unless `wait: true` is passed, in which case we
+	    // wait for the server to agree.
+	    create: function(model, options) {
+	      options = options ? _.clone(options) : {};
+	      if (!(model = this._prepareModel(model, options))) return false;
+	      if (!options.wait) this.add(model, options);
+	      var collection = this;
+	      var success = options.success;
+	      options.success = function(model, resp) {
+	        if (options.wait) collection.add(model, options);
+	        if (success) success(model, resp, options);
+	      };
+	      model.save(null, options);
+	      return model;
+	    },
+
+	    // **parse** converts a response into a list of models to be added to the
+	    // collection. The default implementation is just to pass it through.
+	    parse: function(resp, options) {
+	      return resp;
+	    },
+
+	    // Create a new collection with an identical list of models as this one.
+	    clone: function() {
+	      return new this.constructor(this.models);
+	    },
+
+	    // Private method to reset all internal state. Called when the collection
+	    // is first initialized or reset.
+	    _reset: function() {
+	      this.length = 0;
+	      this.models = [];
+	      this._byId  = {};
+	    },
+
+	    // Prepare a hash of attributes (or other model) to be added to this
+	    // collection.
+	    _prepareModel: function(attrs, options) {
+	      if (attrs instanceof Model) return attrs;
+	      options = options ? _.clone(options) : {};
+	      options.collection = this;
+	      var model = new this.model(attrs, options);
+	      if (!model.validationError) return model;
+	      this.trigger('invalid', this, model.validationError, options);
+	      return false;
+	    },
+
+	    // Internal method to create a model's ties to a collection.
+	    _addReference: function(model, options) {
+	      this._byId[model.cid] = model;
+	      if (model.id != null) this._byId[model.id] = model;
+	      if (!model.collection) model.collection = this;
+	      model.on('all', this._onModelEvent, this);
+	    },
+
+	    // Internal method to sever a model's ties to a collection.
+	    _removeReference: function(model, options) {
+	      if (this === model.collection) delete model.collection;
+	      model.off('all', this._onModelEvent, this);
+	    },
+
+	    // Internal method called every time a model in the set fires an event.
+	    // Sets need to update their indexes when models change ids. All other
+	    // events simply proxy through. "add" and "remove" events that originate
+	    // in other collections are ignored.
+	    _onModelEvent: function(event, model, collection, options) {
+	      if ((event === 'add' || event === 'remove') && collection !== this) return;
+	      if (event === 'destroy') this.remove(model, options);
+	      if (model && event === 'change:' + model.idAttribute) {
+	        delete this._byId[model.previous(model.idAttribute)];
+	        if (model.id != null) this._byId[model.id] = model;
+	      }
+	      this.trigger.apply(this, arguments);
+	    }
+
+	  });
+
+	  // Underscore methods that we want to implement on the Collection.
+	  // 90% of the core usefulness of Backbone Collections is actually implemented
+	  // right here:
+	  var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
+	    'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
+	    'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
+	    'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
+	    'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
+	    'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+
+	  // Mix in each Underscore method as a proxy to `Collection#models`.
+	  _.each(methods, function(method) {
+	    Collection.prototype[method] = function() {
+	      var args = slice.call(arguments);
+	      args.unshift(this.models);
+	      return _[method].apply(_, args);
+	    };
+	  });
+
+	  // Underscore methods that take a property name as an argument.
+	  var attributeMethods = ['groupBy', 'countBy', 'sortBy', 'indexBy'];
+
+	  // Use attributes instead of properties.
+	  _.each(attributeMethods, function(method) {
+	    Collection.prototype[method] = function(value, context) {
+	      var iterator = _.isFunction(value) ? value : function(model) {
+	        return model.get(value);
+	      };
+	      return _[method](this.models, iterator, context);
+	    };
+	  });
+
+	  // Backbone.View
+	  // -------------
+
+	  // Backbone Views are almost more convention than they are actual code. A View
+	  // is simply a JavaScript object that represents a logical chunk of UI in the
+	  // DOM. This might be a single item, an entire list, a sidebar or panel, or
+	  // even the surrounding frame which wraps your whole app. Defining a chunk of
+	  // UI as a **View** allows you to define your DOM events declaratively, without
+	  // having to worry about render order ... and makes it easy for the view to
+	  // react to specific changes in the state of your models.
+
+	  // Creating a Backbone.View creates its initial element outside of the DOM,
+	  // if an existing element is not provided...
+	  var View = Backbone.View = function(options) {
+	    this.cid = _.uniqueId('view');
+	    options || (options = {});
+	    _.extend(this, _.pick(options, viewOptions));
+	    this._ensureElement();
+	    this.initialize.apply(this, arguments);
+	    this.delegateEvents();
+	  };
+
+	  // Cached regex to split keys for `delegate`.
+	  var delegateEventSplitter = /^(\S+)\s*(.*)$/;
+
+	  // List of view options to be merged as properties.
+	  var viewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events'];
+
+	  // Set up all inheritable **Backbone.View** properties and methods.
+	  _.extend(View.prototype, Events, {
+
+	    // The default `tagName` of a View's element is `"div"`.
+	    tagName: 'div',
+
+	    // jQuery delegate for element lookup, scoped to DOM elements within the
+	    // current view. This should be preferred to global lookups where possible.
+	    $: function(selector) {
+	      return this.$el.find(selector);
+	    },
+
+	    // Initialize is an empty function by default. Override it with your own
+	    // initialization logic.
+	    initialize: function(){},
+
+	    // **render** is the core function that your view should override, in order
+	    // to populate its element (`this.el`), with the appropriate HTML. The
+	    // convention is for **render** to always return `this`.
+	    render: function() {
+	      return this;
+	    },
+
+	    // Remove this view by taking the element out of the DOM, and removing any
+	    // applicable Backbone.Events listeners.
+	    remove: function() {
+	      this.$el.remove();
+	      this.stopListening();
+	      return this;
+	    },
+
+	    // Change the view's element (`this.el` property), including event
+	    // re-delegation.
+	    setElement: function(element, delegate) {
+	      if (this.$el) this.undelegateEvents();
+	      this.$el = element instanceof Backbone.$ ? element : Backbone.$(element);
+	      this.el = this.$el[0];
+	      if (delegate !== false) this.delegateEvents();
+	      return this;
+	    },
+
+	    // Set callbacks, where `this.events` is a hash of
+	    //
+	    // *{"event selector": "callback"}*
+	    //
+	    //     {
+	    //       'mousedown .title':  'edit',
+	    //       'click .button':     'save',
+	    //       'click .open':       function(e) { ... }
+	    //     }
+	    //
+	    // pairs. Callbacks will be bound to the view, with `this` set properly.
+	    // Uses event delegation for efficiency.
+	    // Omitting the selector binds the event to `this.el`.
+	    // This only works for delegate-able events: not `focus`, `blur`, and
+	    // not `change`, `submit`, and `reset` in Internet Explorer.
+	    delegateEvents: function(events) {
+	      if (!(events || (events = _.result(this, 'events')))) return this;
+	      this.undelegateEvents();
+	      for (var key in events) {
+	        var method = events[key];
+	        if (!_.isFunction(method)) method = this[events[key]];
+	        if (!method) continue;
+
+	        var match = key.match(delegateEventSplitter);
+	        var eventName = match[1], selector = match[2];
+	        method = _.bind(method, this);
+	        eventName += '.delegateEvents' + this.cid;
+	        if (selector === '') {
+	          this.$el.on(eventName, method);
+	        } else {
+	          this.$el.on(eventName, selector, method);
+	        }
+	      }
+	      return this;
+	    },
+
+	    // Clears all callbacks previously bound to the view with `delegateEvents`.
+	    // You usually don't need to use this, but may wish to if you have multiple
+	    // Backbone views attached to the same DOM element.
+	    undelegateEvents: function() {
+	      this.$el.off('.delegateEvents' + this.cid);
+	      return this;
+	    },
+
+	    // Ensure that the View has a DOM element to render into.
+	    // If `this.el` is a string, pass it through `$()`, take the first
+	    // matching element, and re-assign it to `el`. Otherwise, create
+	    // an element from the `id`, `className` and `tagName` properties.
+	    _ensureElement: function() {
+	      if (!this.el) {
+	        var attrs = _.extend({}, _.result(this, 'attributes'));
+	        if (this.id) attrs.id = _.result(this, 'id');
+	        if (this.className) attrs['class'] = _.result(this, 'className');
+	        var $el = Backbone.$('<' + _.result(this, 'tagName') + '>').attr(attrs);
+	        this.setElement($el, false);
+	      } else {
+	        this.setElement(_.result(this, 'el'), false);
+	      }
+	    }
+
+	  });
+
+	  // Backbone.sync
+	  // -------------
+
+	  // Override this function to change the manner in which Backbone persists
+	  // models to the server. You will be passed the type of request, and the
+	  // model in question. By default, makes a RESTful Ajax request
+	  // to the model's `url()`. Some possible customizations could be:
+	  //
+	  // * Use `setTimeout` to batch rapid-fire updates into a single request.
+	  // * Send up the models as XML instead of JSON.
+	  // * Persist models via WebSockets instead of Ajax.
+	  //
+	  // Turn on `Backbone.emulateHTTP` in order to send `PUT` and `DELETE` requests
+	  // as `POST`, with a `_method` parameter containing the true HTTP method,
+	  // as well as all requests with the body as `application/x-www-form-urlencoded`
+	  // instead of `application/json` with the model in a param named `model`.
+	  // Useful when interfacing with server-side languages like **PHP** that make
+	  // it difficult to read the body of `PUT` requests.
+	  Backbone.sync = function(method, model, options) {
+	    var type = methodMap[method];
+
+	    // Default options, unless specified.
+	    _.defaults(options || (options = {}), {
+	      emulateHTTP: Backbone.emulateHTTP,
+	      emulateJSON: Backbone.emulateJSON
+	    });
+
+	    // Default JSON-request options.
+	    var params = {type: type, dataType: 'json'};
+
+	    // Ensure that we have a URL.
+	    if (!options.url) {
+	      params.url = _.result(model, 'url') || urlError();
+	    }
+
+	    // Ensure that we have the appropriate request data.
+	    if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
+	      params.contentType = 'application/json';
+	      params.data = JSON.stringify(options.attrs || model.toJSON(options));
+	    }
+
+	    // For older servers, emulate JSON by encoding the request into an HTML-form.
+	    if (options.emulateJSON) {
+	      params.contentType = 'application/x-www-form-urlencoded';
+	      params.data = params.data ? {model: params.data} : {};
+	    }
+
+	    // For older servers, emulate HTTP by mimicking the HTTP method with `_method`
+	    // And an `X-HTTP-Method-Override` header.
+	    if (options.emulateHTTP && (type === 'PUT' || type === 'DELETE' || type === 'PATCH')) {
+	      params.type = 'POST';
+	      if (options.emulateJSON) params.data._method = type;
+	      var beforeSend = options.beforeSend;
+	      options.beforeSend = function(xhr) {
+	        xhr.setRequestHeader('X-HTTP-Method-Override', type);
+	        if (beforeSend) return beforeSend.apply(this, arguments);
+	      };
+	    }
+
+	    // Don't process data on a non-GET request.
+	    if (params.type !== 'GET' && !options.emulateJSON) {
+	      params.processData = false;
+	    }
+
+	    // If we're sending a `PATCH` request, and we're in an old Internet Explorer
+	    // that still has ActiveX enabled by default, override jQuery to use that
+	    // for XHR instead. Remove this line when jQuery supports `PATCH` on IE8.
+	    if (params.type === 'PATCH' && noXhrPatch) {
+	      params.xhr = function() {
+	        return new ActiveXObject("Microsoft.XMLHTTP");
+	      };
+	    }
+
+	    // Make the request, allowing the user to override any Ajax options.
+	    var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+	    model.trigger('request', model, xhr, options);
+	    return xhr;
+	  };
+
+	  var noXhrPatch =
+	    typeof window !== 'undefined' && !!window.ActiveXObject &&
+	      !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
+
+	  // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
+	  var methodMap = {
+	    'create': 'POST',
+	    'update': 'PUT',
+	    'patch':  'PATCH',
+	    'delete': 'DELETE',
+	    'read':   'GET'
+	  };
+
+	  // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
+	  // Override this if you'd like to use a different library.
+	  Backbone.ajax = function() {
+	    return Backbone.$.ajax.apply(Backbone.$, arguments);
+	  };
+
+	  // Backbone.Router
+	  // ---------------
+
+	  // Routers map faux-URLs to actions, and fire events when routes are
+	  // matched. Creating a new one sets its `routes` hash, if not set statically.
+	  var Router = Backbone.Router = function(options) {
+	    options || (options = {});
+	    if (options.routes) this.routes = options.routes;
+	    this._bindRoutes();
+	    this.initialize.apply(this, arguments);
+	  };
+
+	  // Cached regular expressions for matching named param parts and splatted
+	  // parts of route strings.
+	  var optionalParam = /\((.*?)\)/g;
+	  var namedParam    = /(\(\?)?:\w+/g;
+	  var splatParam    = /\*\w+/g;
+	  var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
+
+	  // Set up all inheritable **Backbone.Router** properties and methods.
+	  _.extend(Router.prototype, Events, {
+
+	    // Initialize is an empty function by default. Override it with your own
+	    // initialization logic.
+	    initialize: function(){},
+
+	    // Manually bind a single named route to a callback. For example:
+	    //
+	    //     this.route('search/:query/p:num', 'search', function(query, num) {
+	    //       ...
+	    //     });
+	    //
+	    route: function(route, name, callback) {
+	      if (!_.isRegExp(route)) route = this._routeToRegExp(route);
+	      if (_.isFunction(name)) {
+	        callback = name;
+	        name = '';
+	      }
+	      if (!callback) callback = this[name];
+	      var router = this;
+	      Backbone.history.route(route, function(fragment) {
+	        var args = router._extractParameters(route, fragment);
+	        router.execute(callback, args);
+	        router.trigger.apply(router, ['route:' + name].concat(args));
+	        router.trigger('route', name, args);
+	        Backbone.history.trigger('route', router, name, args);
+	      });
+	      return this;
+	    },
+
+	    // Execute a route handler with the provided parameters.  This is an
+	    // excellent place to do pre-route setup or post-route cleanup.
+	    execute: function(callback, args) {
+	      if (callback) callback.apply(this, args);
+	    },
+
+	    // Simple proxy to `Backbone.history` to save a fragment into the history.
+	    navigate: function(fragment, options) {
+	      Backbone.history.navigate(fragment, options);
+	      return this;
+	    },
+
+	    // Bind all defined routes to `Backbone.history`. We have to reverse the
+	    // order of the routes here to support behavior where the most general
+	    // routes can be defined at the bottom of the route map.
+	    _bindRoutes: function() {
+	      if (!this.routes) return;
+	      this.routes = _.result(this, 'routes');
+	      var route, routes = _.keys(this.routes);
+	      while ((route = routes.pop()) != null) {
+	        this.route(route, this.routes[route]);
+	      }
+	    },
+
+	    // Convert a route string into a regular expression, suitable for matching
+	    // against the current location hash.
+	    _routeToRegExp: function(route) {
+	      route = route.replace(escapeRegExp, '\\$&')
+	                   .replace(optionalParam, '(?:$1)?')
+	                   .replace(namedParam, function(match, optional) {
+	                     return optional ? match : '([^/?]+)';
+	                   })
+	                   .replace(splatParam, '([^?]*?)');
+	      return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+	    },
+
+	    // Given a route, and a URL fragment that it matches, return the array of
+	    // extracted decoded parameters. Empty or unmatched parameters will be
+	    // treated as `null` to normalize cross-browser behavior.
+	    _extractParameters: function(route, fragment) {
+	      var params = route.exec(fragment).slice(1);
+	      return _.map(params, function(param, i) {
+	        // Don't decode the search params.
+	        if (i === params.length - 1) return param || null;
+	        return param ? decodeURIComponent(param) : null;
+	      });
+	    }
+
+	  });
+
+	  // Backbone.History
+	  // ----------------
+
+	  // Handles cross-browser history management, based on either
+	  // [pushState](http://diveintohtml5.info/history.html) and real URLs, or
+	  // [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
+	  // and URL fragments. If the browser supports neither (old IE, natch),
+	  // falls back to polling.
+	  var History = Backbone.History = function() {
+	    this.handlers = [];
+	    _.bindAll(this, 'checkUrl');
+
+	    // Ensure that `History` can be used outside of the browser.
+	    if (typeof window !== 'undefined') {
+	      this.location = window.location;
+	      this.history = window.history;
+	    }
+	  };
+
+	  // Cached regex for stripping a leading hash/slash and trailing space.
+	  var routeStripper = /^[#\/]|\s+$/g;
+
+	  // Cached regex for stripping leading and trailing slashes.
+	  var rootStripper = /^\/+|\/+$/g;
+
+	  // Cached regex for detecting MSIE.
+	  var isExplorer = /msie [\w.]+/;
+
+	  // Cached regex for removing a trailing slash.
+	  var trailingSlash = /\/$/;
+
+	  // Cached regex for stripping urls of hash.
+	  var pathStripper = /#.*$/;
+
+	  // Has the history handling already been started?
+	  History.started = false;
+
+	  // Set up all inheritable **Backbone.History** properties and methods.
+	  _.extend(History.prototype, Events, {
+
+	    // The default interval to poll for hash changes, if necessary, is
+	    // twenty times a second.
+	    interval: 50,
+
+	    // Are we at the app root?
+	    atRoot: function() {
+	      return this.location.pathname.replace(/[^\/]$/, '$&/') === this.root;
+	    },
+
+	    // Gets the true hash value. Cannot use location.hash directly due to bug
+	    // in Firefox where location.hash will always be decoded.
+	    getHash: function(window) {
+	      var match = (window || this).location.href.match(/#(.*)$/);
+	      return match ? match[1] : '';
+	    },
+
+	    // Get the cross-browser normalized URL fragment, either from the URL,
+	    // the hash, or the override.
+	    getFragment: function(fragment, forcePushState) {
+	      if (fragment == null) {
+	        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
+	          fragment = decodeURI(this.location.pathname + this.location.search);
+	          var root = this.root.replace(trailingSlash, '');
+	          if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
+	        } else {
+	          fragment = this.getHash();
+	        }
+	      }
+	      return fragment.replace(routeStripper, '');
+	    },
+
+	    // Start the hash change handling, returning `true` if the current URL matches
+	    // an existing route, and `false` otherwise.
+	    start: function(options) {
+	      if (History.started) throw new Error("Backbone.history has already been started");
+	      History.started = true;
+
+	      // Figure out the initial configuration. Do we need an iframe?
+	      // Is pushState desired ... is it available?
+	      this.options          = _.extend({root: '/'}, this.options, options);
+	      this.root             = this.options.root;
+	      this._wantsHashChange = this.options.hashChange !== false;
+	      this._wantsPushState  = !!this.options.pushState;
+	      this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
+	      var fragment          = this.getFragment();
+	      var docMode           = document.documentMode;
+	      var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
+
+	      // Normalize root to always include a leading and trailing slash.
+	      this.root = ('/' + this.root + '/').replace(rootStripper, '/');
+
+	      if (oldIE && this._wantsHashChange) {
+	        var frame = Backbone.$('<iframe src="javascript:0" tabindex="-1">');
+	        this.iframe = frame.hide().appendTo('body')[0].contentWindow;
+	        this.navigate(fragment);
+	      }
+
+	      // Depending on whether we're using pushState or hashes, and whether
+	      // 'onhashchange' is supported, determine how we check the URL state.
+	      if (this._hasPushState) {
+	        Backbone.$(window).on('popstate', this.checkUrl);
+	      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
+	        Backbone.$(window).on('hashchange', this.checkUrl);
+	      } else if (this._wantsHashChange) {
+	        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
+	      }
+
+	      // Determine if we need to change the base url, for a pushState link
+	      // opened by a non-pushState browser.
+	      this.fragment = fragment;
+	      var loc = this.location;
+
+	      // Transition from hashChange to pushState or vice versa if both are
+	      // requested.
+	      if (this._wantsHashChange && this._wantsPushState) {
+
+	        // If we've started off with a route from a `pushState`-enabled
+	        // browser, but we're currently in a browser that doesn't support it...
+	        if (!this._hasPushState && !this.atRoot()) {
+	          this.fragment = this.getFragment(null, true);
+	          this.location.replace(this.root + '#' + this.fragment);
+	          // Return immediately as browser will do redirect to new url
+	          return true;
+
+	        // Or if we've started out with a hash-based route, but we're currently
+	        // in a browser where it could be `pushState`-based instead...
+	        } else if (this._hasPushState && this.atRoot() && loc.hash) {
+	          this.fragment = this.getHash().replace(routeStripper, '');
+	          this.history.replaceState({}, document.title, this.root + this.fragment);
+	        }
+
+	      }
+
+	      if (!this.options.silent) return this.loadUrl();
+	    },
+
+	    // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
+	    // but possibly useful for unit testing Routers.
+	    stop: function() {
+	      Backbone.$(window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
+	      if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
+	      History.started = false;
+	    },
+
+	    // Add a route to be tested when the fragment changes. Routes added later
+	    // may override previous routes.
+	    route: function(route, callback) {
+	      this.handlers.unshift({route: route, callback: callback});
+	    },
+
+	    // Checks the current URL to see if it has changed, and if it has,
+	    // calls `loadUrl`, normalizing across the hidden iframe.
+	    checkUrl: function(e) {
+	      var current = this.getFragment();
+	      if (current === this.fragment && this.iframe) {
+	        current = this.getFragment(this.getHash(this.iframe));
+	      }
+	      if (current === this.fragment) return false;
+	      if (this.iframe) this.navigate(current);
+	      this.loadUrl();
+	    },
+
+	    // Attempt to load the current URL fragment. If a route succeeds with a
+	    // match, returns `true`. If no defined routes matches the fragment,
+	    // returns `false`.
+	    loadUrl: function(fragment) {
+	      fragment = this.fragment = this.getFragment(fragment);
+	      return _.any(this.handlers, function(handler) {
+	        if (handler.route.test(fragment)) {
+	          handler.callback(fragment);
+	          return true;
+	        }
+	      });
+	    },
+
+	    // Save a fragment into the hash history, or replace the URL state if the
+	    // 'replace' option is passed. You are responsible for properly URL-encoding
+	    // the fragment in advance.
+	    //
+	    // The options object can contain `trigger: true` if you wish to have the
+	    // route callback be fired (not usually desirable), or `replace: true`, if
+	    // you wish to modify the current URL without adding an entry to the history.
+	    navigate: function(fragment, options) {
+	      if (!History.started) return false;
+	      if (!options || options === true) options = {trigger: !!options};
+
+	      var url = this.root + (fragment = this.getFragment(fragment || ''));
+
+	      // Strip the hash for matching.
+	      fragment = fragment.replace(pathStripper, '');
+
+	      if (this.fragment === fragment) return;
+	      this.fragment = fragment;
+
+	      // Don't include a trailing slash on the root.
+	      if (fragment === '' && url !== '/') url = url.slice(0, -1);
+
+	      // If pushState is available, we use it to set the fragment as a real URL.
+	      if (this._hasPushState) {
+	        this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
+
+	      // If hash changes haven't been explicitly disabled, update the hash
+	      // fragment to store history.
+	      } else if (this._wantsHashChange) {
+	        this._updateHash(this.location, fragment, options.replace);
+	        if (this.iframe && (fragment !== this.getFragment(this.getHash(this.iframe)))) {
+	          // Opening and closing the iframe tricks IE7 and earlier to push a
+	          // history entry on hash-tag change.  When replace is true, we don't
+	          // want this.
+	          if(!options.replace) this.iframe.document.open().close();
+	          this._updateHash(this.iframe.location, fragment, options.replace);
+	        }
+
+	      // If you've told us that you explicitly don't want fallback hashchange-
+	      // based history, then `navigate` becomes a page refresh.
+	      } else {
+	        return this.location.assign(url);
+	      }
+	      if (options.trigger) return this.loadUrl(fragment);
+	    },
+
+	    // Update the hash location, either replacing the current entry, or adding
+	    // a new one to the browser history.
+	    _updateHash: function(location, fragment, replace) {
+	      if (replace) {
+	        var href = location.href.replace(/(javascript:|#).*$/, '');
+	        location.replace(href + '#' + fragment);
+	      } else {
+	        // Some browsers require that `hash` contains a leading #.
+	        location.hash = '#' + fragment;
+	      }
+	    }
+
+	  });
+
+	  // Create the default Backbone.history.
+	  Backbone.history = new History;
+
+	  // Helpers
+	  // -------
+
+	  // Helper function to correctly set up the prototype chain, for subclasses.
+	  // Similar to `goog.inherits`, but uses a hash of prototype properties and
+	  // class properties to be extended.
+	  var extend = function(protoProps, staticProps) {
+	    var parent = this;
+	    var child;
+
+	    // The constructor function for the new subclass is either defined by you
+	    // (the "constructor" property in your `extend` definition), or defaulted
+	    // by us to simply call the parent's constructor.
+	    if (protoProps && _.has(protoProps, 'constructor')) {
+	      child = protoProps.constructor;
+	    } else {
+	      child = function(){ return parent.apply(this, arguments); };
+	    }
+
+	    // Add static properties to the constructor function, if supplied.
+	    _.extend(child, parent, staticProps);
+
+	    // Set the prototype chain to inherit from `parent`, without calling
+	    // `parent`'s constructor function.
+	    var Surrogate = function(){ this.constructor = child; };
+	    Surrogate.prototype = parent.prototype;
+	    child.prototype = new Surrogate;
+
+	    // Add prototype properties (instance properties) to the subclass,
+	    // if supplied.
+	    if (protoProps) _.extend(child.prototype, protoProps);
+
+	    // Set a convenience property in case the parent's prototype is needed
+	    // later.
+	    child.__super__ = parent.prototype;
+
+	    return child;
+	  };
+
+	  // Set up inheritance for the model, collection, router, view and history.
+	  Model.extend = Collection.extend = Router.extend = View.extend = History.extend = extend;
+
+	  // Throw an error when a URL is needed, and none is supplied.
+	  var urlError = function() {
+	    throw new Error('A "url" property or function must be specified');
+	  };
+
+	  // Wrap an optional error callback with a fallback error event.
+	  var wrapError = function(model, options) {
+	    var error = options.error;
+	    options.error = function(resp) {
+	      if (error) error(model, resp, options);
+	      model.trigger('error', model, resp, options);
+	    };
+	  };
+
+	  return Backbone;
+
+	}));
+
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/** @jsx React.DOM *//*!
@@ -12689,1624 +14311,10 @@
 
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/** @jsx React.DOM *///     Backbone.js 1.1.2
-
-	//     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-	//     Backbone may be freely distributed under the MIT license.
-	//     For all details and documentation:
-	//     http://backbonejs.org
-
-	(function(root, factory) {
-
-	  // Set up Backbone appropriately for the environment. Start with AMD.
-	  if (true) {
-	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7), __webpack_require__(8), exports], __WEBPACK_AMD_DEFINE_RESULT__ = function(_, $, exports) {
-	      // Export global even in AMD case in case this script is loaded with
-	      // others that may still expect a global Backbone.
-	      root.Backbone = factory(root, exports, _, $);
-	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-	  // Next for Node.js or CommonJS. jQuery may not be needed as a module.
-	  } else if (typeof exports !== 'undefined') {
-	    var _ = require('underscore');
-	    factory(root, exports, _);
-
-	  // Finally, as a browser global.
-	  } else {
-	    root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
-	  }
-
-	}(this, function(root, Backbone, _, $) {
-
-	  // Initial Setup
-	  // -------------
-
-	  // Save the previous value of the `Backbone` variable, so that it can be
-	  // restored later on, if `noConflict` is used.
-	  var previousBackbone = root.Backbone;
-
-	  // Create local references to array methods we'll want to use later.
-	  var array = [];
-	  var push = array.push;
-	  var slice = array.slice;
-	  var splice = array.splice;
-
-	  // Current version of the library. Keep in sync with `package.json`.
-	  Backbone.VERSION = '1.1.2';
-
-	  // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
-	  // the `$` variable.
-	  Backbone.$ = $;
-
-	  // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
-	  // to its previous owner. Returns a reference to this Backbone object.
-	  Backbone.noConflict = function() {
-	    root.Backbone = previousBackbone;
-	    return this;
-	  };
-
-	  // Turn on `emulateHTTP` to support legacy HTTP servers. Setting this option
-	  // will fake `"PATCH"`, `"PUT"` and `"DELETE"` requests via the `_method` parameter and
-	  // set a `X-Http-Method-Override` header.
-	  Backbone.emulateHTTP = false;
-
-	  // Turn on `emulateJSON` to support legacy servers that can't deal with direct
-	  // `application/json` requests ... will encode the body as
-	  // `application/x-www-form-urlencoded` instead and will send the model in a
-	  // form param named `model`.
-	  Backbone.emulateJSON = false;
-
-	  // Backbone.Events
-	  // ---------------
-
-	  // A module that can be mixed in to *any object* in order to provide it with
-	  // custom events. You may bind with `on` or remove with `off` callback
-	  // functions to an event; `trigger`-ing an event fires all callbacks in
-	  // succession.
-	  //
-	  //     var object = {};
-	  //     _.extend(object, Backbone.Events);
-	  //     object.on('expand', function(){ alert('expanded'); });
-	  //     object.trigger('expand');
-	  //
-	  var Events = Backbone.Events = {
-
-	    // Bind an event to a `callback` function. Passing `"all"` will bind
-	    // the callback to all events fired.
-	    on: function(name, callback, context) {
-	      if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
-	      this._events || (this._events = {});
-	      var events = this._events[name] || (this._events[name] = []);
-	      events.push({callback: callback, context: context, ctx: context || this});
-	      return this;
-	    },
-
-	    // Bind an event to only be triggered a single time. After the first time
-	    // the callback is invoked, it will be removed.
-	    once: function(name, callback, context) {
-	      if (!eventsApi(this, 'once', name, [callback, context]) || !callback) return this;
-	      var self = this;
-	      var once = _.once(function() {
-	        self.off(name, once);
-	        callback.apply(this, arguments);
-	      });
-	      once._callback = callback;
-	      return this.on(name, once, context);
-	    },
-
-	    // Remove one or many callbacks. If `context` is null, removes all
-	    // callbacks with that function. If `callback` is null, removes all
-	    // callbacks for the event. If `name` is null, removes all bound
-	    // callbacks for all events.
-	    off: function(name, callback, context) {
-	      var retain, ev, events, names, i, l, j, k;
-	      if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
-	      if (!name && !callback && !context) {
-	        this._events = void 0;
-	        return this;
-	      }
-	      names = name ? [name] : _.keys(this._events);
-	      for (i = 0, l = names.length; i < l; i++) {
-	        name = names[i];
-	        if (events = this._events[name]) {
-	          this._events[name] = retain = [];
-	          if (callback || context) {
-	            for (j = 0, k = events.length; j < k; j++) {
-	              ev = events[j];
-	              if ((callback && callback !== ev.callback && callback !== ev.callback._callback) ||
-	                  (context && context !== ev.context)) {
-	                retain.push(ev);
-	              }
-	            }
-	          }
-	          if (!retain.length) delete this._events[name];
-	        }
-	      }
-
-	      return this;
-	    },
-
-	    // Trigger one or many events, firing all bound callbacks. Callbacks are
-	    // passed the same arguments as `trigger` is, apart from the event name
-	    // (unless you're listening on `"all"`, which will cause your callback to
-	    // receive the true name of the event as the first argument).
-	    trigger: function(name) {
-	      if (!this._events) return this;
-	      var args = slice.call(arguments, 1);
-	      if (!eventsApi(this, 'trigger', name, args)) return this;
-	      var events = this._events[name];
-	      var allEvents = this._events.all;
-	      if (events) triggerEvents(events, args);
-	      if (allEvents) triggerEvents(allEvents, arguments);
-	      return this;
-	    },
-
-	    // Tell this object to stop listening to either specific events ... or
-	    // to every object it's currently listening to.
-	    stopListening: function(obj, name, callback) {
-	      var listeningTo = this._listeningTo;
-	      if (!listeningTo) return this;
-	      var remove = !name && !callback;
-	      if (!callback && typeof name === 'object') callback = this;
-	      if (obj) (listeningTo = {})[obj._listenId] = obj;
-	      for (var id in listeningTo) {
-	        obj = listeningTo[id];
-	        obj.off(name, callback, this);
-	        if (remove || _.isEmpty(obj._events)) delete this._listeningTo[id];
-	      }
-	      return this;
-	    }
-
-	  };
-
-	  // Regular expression used to split event strings.
-	  var eventSplitter = /\s+/;
-
-	  // Implement fancy features of the Events API such as multiple event
-	  // names `"change blur"` and jQuery-style event maps `{change: action}`
-	  // in terms of the existing API.
-	  var eventsApi = function(obj, action, name, rest) {
-	    if (!name) return true;
-
-	    // Handle event maps.
-	    if (typeof name === 'object') {
-	      for (var key in name) {
-	        obj[action].apply(obj, [key, name[key]].concat(rest));
-	      }
-	      return false;
-	    }
-
-	    // Handle space separated event names.
-	    if (eventSplitter.test(name)) {
-	      var names = name.split(eventSplitter);
-	      for (var i = 0, l = names.length; i < l; i++) {
-	        obj[action].apply(obj, [names[i]].concat(rest));
-	      }
-	      return false;
-	    }
-
-	    return true;
-	  };
-
-	  // A difficult-to-believe, but optimized internal dispatch function for
-	  // triggering events. Tries to keep the usual cases speedy (most internal
-	  // Backbone events have 3 arguments).
-	  var triggerEvents = function(events, args) {
-	    var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
-	    switch (args.length) {
-	      case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
-	      case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
-	      case 2: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2); return;
-	      case 3: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); return;
-	      default: while (++i < l) (ev = events[i]).callback.apply(ev.ctx, args); return;
-	    }
-	  };
-
-	  var listenMethods = {listenTo: 'on', listenToOnce: 'once'};
-
-	  // Inversion-of-control versions of `on` and `once`. Tell *this* object to
-	  // listen to an event in another object ... keeping track of what it's
-	  // listening to.
-	  _.each(listenMethods, function(implementation, method) {
-	    Events[method] = function(obj, name, callback) {
-	      var listeningTo = this._listeningTo || (this._listeningTo = {});
-	      var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
-	      listeningTo[id] = obj;
-	      if (!callback && typeof name === 'object') callback = this;
-	      obj[implementation](name, callback, this);
-	      return this;
-	    };
-	  });
-
-	  // Aliases for backwards compatibility.
-	  Events.bind   = Events.on;
-	  Events.unbind = Events.off;
-
-	  // Allow the `Backbone` object to serve as a global event bus, for folks who
-	  // want global "pubsub" in a convenient place.
-	  _.extend(Backbone, Events);
-
-	  // Backbone.Model
-	  // --------------
-
-	  // Backbone **Models** are the basic data object in the framework --
-	  // frequently representing a row in a table in a database on your server.
-	  // A discrete chunk of data and a bunch of useful, related methods for
-	  // performing computations and transformations on that data.
-
-	  // Create a new model with the specified attributes. A client id (`cid`)
-	  // is automatically generated and assigned for you.
-	  var Model = Backbone.Model = function(attributes, options) {
-	    var attrs = attributes || {};
-	    options || (options = {});
-	    this.cid = _.uniqueId('c');
-	    this.attributes = {};
-	    if (options.collection) this.collection = options.collection;
-	    if (options.parse) attrs = this.parse(attrs, options) || {};
-	    attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
-	    this.set(attrs, options);
-	    this.changed = {};
-	    this.initialize.apply(this, arguments);
-	  };
-
-	  // Attach all inheritable methods to the Model prototype.
-	  _.extend(Model.prototype, Events, {
-
-	    // A hash of attributes whose current and previous value differ.
-	    changed: null,
-
-	    // The value returned during the last failed validation.
-	    validationError: null,
-
-	    // The default name for the JSON `id` attribute is `"id"`. MongoDB and
-	    // CouchDB users may want to set this to `"_id"`.
-	    idAttribute: 'id',
-
-	    // Initialize is an empty function by default. Override it with your own
-	    // initialization logic.
-	    initialize: function(){},
-
-	    // Return a copy of the model's `attributes` object.
-	    toJSON: function(options) {
-	      return _.clone(this.attributes);
-	    },
-
-	    // Proxy `Backbone.sync` by default -- but override this if you need
-	    // custom syncing semantics for *this* particular model.
-	    sync: function() {
-	      return Backbone.sync.apply(this, arguments);
-	    },
-
-	    // Get the value of an attribute.
-	    get: function(attr) {
-	      return this.attributes[attr];
-	    },
-
-	    // Get the HTML-escaped value of an attribute.
-	    escape: function(attr) {
-	      return _.escape(this.get(attr));
-	    },
-
-	    // Returns `true` if the attribute contains a value that is not null
-	    // or undefined.
-	    has: function(attr) {
-	      return this.get(attr) != null;
-	    },
-
-	    // Set a hash of model attributes on the object, firing `"change"`. This is
-	    // the core primitive operation of a model, updating the data and notifying
-	    // anyone who needs to know about the change in state. The heart of the beast.
-	    set: function(key, val, options) {
-	      var attr, attrs, unset, changes, silent, changing, prev, current;
-	      if (key == null) return this;
-
-	      // Handle both `"key", value` and `{key: value}` -style arguments.
-	      if (typeof key === 'object') {
-	        attrs = key;
-	        options = val;
-	      } else {
-	        (attrs = {})[key] = val;
-	      }
-
-	      options || (options = {});
-
-	      // Run validation.
-	      if (!this._validate(attrs, options)) return false;
-
-	      // Extract attributes and options.
-	      unset           = options.unset;
-	      silent          = options.silent;
-	      changes         = [];
-	      changing        = this._changing;
-	      this._changing  = true;
-
-	      if (!changing) {
-	        this._previousAttributes = _.clone(this.attributes);
-	        this.changed = {};
-	      }
-	      current = this.attributes, prev = this._previousAttributes;
-
-	      // Check for changes of `id`.
-	      if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
-
-	      // For each `set` attribute, update or delete the current value.
-	      for (attr in attrs) {
-	        val = attrs[attr];
-	        if (!_.isEqual(current[attr], val)) changes.push(attr);
-	        if (!_.isEqual(prev[attr], val)) {
-	          this.changed[attr] = val;
-	        } else {
-	          delete this.changed[attr];
-	        }
-	        unset ? delete current[attr] : current[attr] = val;
-	      }
-
-	      // Trigger all relevant attribute changes.
-	      if (!silent) {
-	        if (changes.length) this._pending = options;
-	        for (var i = 0, l = changes.length; i < l; i++) {
-	          this.trigger('change:' + changes[i], this, current[changes[i]], options);
-	        }
-	      }
-
-	      // You might be wondering why there's a `while` loop here. Changes can
-	      // be recursively nested within `"change"` events.
-	      if (changing) return this;
-	      if (!silent) {
-	        while (this._pending) {
-	          options = this._pending;
-	          this._pending = false;
-	          this.trigger('change', this, options);
-	        }
-	      }
-	      this._pending = false;
-	      this._changing = false;
-	      return this;
-	    },
-
-	    // Remove an attribute from the model, firing `"change"`. `unset` is a noop
-	    // if the attribute doesn't exist.
-	    unset: function(attr, options) {
-	      return this.set(attr, void 0, _.extend({}, options, {unset: true}));
-	    },
-
-	    // Clear all attributes on the model, firing `"change"`.
-	    clear: function(options) {
-	      var attrs = {};
-	      for (var key in this.attributes) attrs[key] = void 0;
-	      return this.set(attrs, _.extend({}, options, {unset: true}));
-	    },
-
-	    // Determine if the model has changed since the last `"change"` event.
-	    // If you specify an attribute name, determine if that attribute has changed.
-	    hasChanged: function(attr) {
-	      if (attr == null) return !_.isEmpty(this.changed);
-	      return _.has(this.changed, attr);
-	    },
-
-	    // Return an object containing all the attributes that have changed, or
-	    // false if there are no changed attributes. Useful for determining what
-	    // parts of a view need to be updated and/or what attributes need to be
-	    // persisted to the server. Unset attributes will be set to undefined.
-	    // You can also pass an attributes object to diff against the model,
-	    // determining if there *would be* a change.
-	    changedAttributes: function(diff) {
-	      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
-	      var val, changed = false;
-	      var old = this._changing ? this._previousAttributes : this.attributes;
-	      for (var attr in diff) {
-	        if (_.isEqual(old[attr], (val = diff[attr]))) continue;
-	        (changed || (changed = {}))[attr] = val;
-	      }
-	      return changed;
-	    },
-
-	    // Get the previous value of an attribute, recorded at the time the last
-	    // `"change"` event was fired.
-	    previous: function(attr) {
-	      if (attr == null || !this._previousAttributes) return null;
-	      return this._previousAttributes[attr];
-	    },
-
-	    // Get all of the attributes of the model at the time of the previous
-	    // `"change"` event.
-	    previousAttributes: function() {
-	      return _.clone(this._previousAttributes);
-	    },
-
-	    // Fetch the model from the server. If the server's representation of the
-	    // model differs from its current attributes, they will be overridden,
-	    // triggering a `"change"` event.
-	    fetch: function(options) {
-	      options = options ? _.clone(options) : {};
-	      if (options.parse === void 0) options.parse = true;
-	      var model = this;
-	      var success = options.success;
-	      options.success = function(resp) {
-	        if (!model.set(model.parse(resp, options), options)) return false;
-	        if (success) success(model, resp, options);
-	        model.trigger('sync', model, resp, options);
-	      };
-	      wrapError(this, options);
-	      return this.sync('read', this, options);
-	    },
-
-	    // Set a hash of model attributes, and sync the model to the server.
-	    // If the server returns an attributes hash that differs, the model's
-	    // state will be `set` again.
-	    save: function(key, val, options) {
-	      var attrs, method, xhr, attributes = this.attributes;
-
-	      // Handle both `"key", value` and `{key: value}` -style arguments.
-	      if (key == null || typeof key === 'object') {
-	        attrs = key;
-	        options = val;
-	      } else {
-	        (attrs = {})[key] = val;
-	      }
-
-	      options = _.extend({validate: true}, options);
-
-	      // If we're not waiting and attributes exist, save acts as
-	      // `set(attr).save(null, opts)` with validation. Otherwise, check if
-	      // the model will be valid when the attributes, if any, are set.
-	      if (attrs && !options.wait) {
-	        if (!this.set(attrs, options)) return false;
-	      } else {
-	        if (!this._validate(attrs, options)) return false;
-	      }
-
-	      // Set temporary attributes if `{wait: true}`.
-	      if (attrs && options.wait) {
-	        this.attributes = _.extend({}, attributes, attrs);
-	      }
-
-	      // After a successful server-side save, the client is (optionally)
-	      // updated with the server-side state.
-	      if (options.parse === void 0) options.parse = true;
-	      var model = this;
-	      var success = options.success;
-	      options.success = function(resp) {
-	        // Ensure attributes are restored during synchronous saves.
-	        model.attributes = attributes;
-	        var serverAttrs = model.parse(resp, options);
-	        if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
-	        if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
-	          return false;
-	        }
-	        if (success) success(model, resp, options);
-	        model.trigger('sync', model, resp, options);
-	      };
-	      wrapError(this, options);
-
-	      method = this.isNew() ? 'create' : (options.patch ? 'patch' : 'update');
-	      if (method === 'patch') options.attrs = attrs;
-	      xhr = this.sync(method, this, options);
-
-	      // Restore attributes.
-	      if (attrs && options.wait) this.attributes = attributes;
-
-	      return xhr;
-	    },
-
-	    // Destroy this model on the server if it was already persisted.
-	    // Optimistically removes the model from its collection, if it has one.
-	    // If `wait: true` is passed, waits for the server to respond before removal.
-	    destroy: function(options) {
-	      options = options ? _.clone(options) : {};
-	      var model = this;
-	      var success = options.success;
-
-	      var destroy = function() {
-	        model.trigger('destroy', model, model.collection, options);
-	      };
-
-	      options.success = function(resp) {
-	        if (options.wait || model.isNew()) destroy();
-	        if (success) success(model, resp, options);
-	        if (!model.isNew()) model.trigger('sync', model, resp, options);
-	      };
-
-	      if (this.isNew()) {
-	        options.success();
-	        return false;
-	      }
-	      wrapError(this, options);
-
-	      var xhr = this.sync('delete', this, options);
-	      if (!options.wait) destroy();
-	      return xhr;
-	    },
-
-	    // Default URL for the model's representation on the server -- if you're
-	    // using Backbone's restful methods, override this to change the endpoint
-	    // that will be called.
-	    url: function() {
-	      var base =
-	        _.result(this, 'urlRoot') ||
-	        _.result(this.collection, 'url') ||
-	        urlError();
-	      if (this.isNew()) return base;
-	      return base.replace(/([^\/])$/, '$1/') + encodeURIComponent(this.id);
-	    },
-
-	    // **parse** converts a response into the hash of attributes to be `set` on
-	    // the model. The default implementation is just to pass the response along.
-	    parse: function(resp, options) {
-	      return resp;
-	    },
-
-	    // Create a new model with identical attributes to this one.
-	    clone: function() {
-	      return new this.constructor(this.attributes);
-	    },
-
-	    // A model is new if it has never been saved to the server, and lacks an id.
-	    isNew: function() {
-	      return !this.has(this.idAttribute);
-	    },
-
-	    // Check if the model is currently in a valid state.
-	    isValid: function(options) {
-	      return this._validate({}, _.extend(options || {}, { validate: true }));
-	    },
-
-	    // Run validation against the next complete set of model attributes,
-	    // returning `true` if all is well. Otherwise, fire an `"invalid"` event.
-	    _validate: function(attrs, options) {
-	      if (!options.validate || !this.validate) return true;
-	      attrs = _.extend({}, this.attributes, attrs);
-	      var error = this.validationError = this.validate(attrs, options) || null;
-	      if (!error) return true;
-	      this.trigger('invalid', this, error, _.extend(options, {validationError: error}));
-	      return false;
-	    }
-
-	  });
-
-	  // Underscore methods that we want to implement on the Model.
-	  var modelMethods = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
-
-	  // Mix in each Underscore method as a proxy to `Model#attributes`.
-	  _.each(modelMethods, function(method) {
-	    Model.prototype[method] = function() {
-	      var args = slice.call(arguments);
-	      args.unshift(this.attributes);
-	      return _[method].apply(_, args);
-	    };
-	  });
-
-	  // Backbone.Collection
-	  // -------------------
-
-	  // If models tend to represent a single row of data, a Backbone Collection is
-	  // more analagous to a table full of data ... or a small slice or page of that
-	  // table, or a collection of rows that belong together for a particular reason
-	  // -- all of the messages in this particular folder, all of the documents
-	  // belonging to this particular author, and so on. Collections maintain
-	  // indexes of their models, both in order, and for lookup by `id`.
-
-	  // Create a new **Collection**, perhaps to contain a specific type of `model`.
-	  // If a `comparator` is specified, the Collection will maintain
-	  // its models in sort order, as they're added and removed.
-	  var Collection = Backbone.Collection = function(models, options) {
-	    options || (options = {});
-	    if (options.model) this.model = options.model;
-	    if (options.comparator !== void 0) this.comparator = options.comparator;
-	    this._reset();
-	    this.initialize.apply(this, arguments);
-	    if (models) this.reset(models, _.extend({silent: true}, options));
-	  };
-
-	  // Default options for `Collection#set`.
-	  var setOptions = {add: true, remove: true, merge: true};
-	  var addOptions = {add: true, remove: false};
-
-	  // Define the Collection's inheritable methods.
-	  _.extend(Collection.prototype, Events, {
-
-	    // The default model for a collection is just a **Backbone.Model**.
-	    // This should be overridden in most cases.
-	    model: Model,
-
-	    // Initialize is an empty function by default. Override it with your own
-	    // initialization logic.
-	    initialize: function(){},
-
-	    // The JSON representation of a Collection is an array of the
-	    // models' attributes.
-	    toJSON: function(options) {
-	      return this.map(function(model){ return model.toJSON(options); });
-	    },
-
-	    // Proxy `Backbone.sync` by default.
-	    sync: function() {
-	      return Backbone.sync.apply(this, arguments);
-	    },
-
-	    // Add a model, or list of models to the set.
-	    add: function(models, options) {
-	      return this.set(models, _.extend({merge: false}, options, addOptions));
-	    },
-
-	    // Remove a model, or a list of models from the set.
-	    remove: function(models, options) {
-	      var singular = !_.isArray(models);
-	      models = singular ? [models] : _.clone(models);
-	      options || (options = {});
-	      var i, l, index, model;
-	      for (i = 0, l = models.length; i < l; i++) {
-	        model = models[i] = this.get(models[i]);
-	        if (!model) continue;
-	        delete this._byId[model.id];
-	        delete this._byId[model.cid];
-	        index = this.indexOf(model);
-	        this.models.splice(index, 1);
-	        this.length--;
-	        if (!options.silent) {
-	          options.index = index;
-	          model.trigger('remove', model, this, options);
-	        }
-	        this._removeReference(model, options);
-	      }
-	      return singular ? models[0] : models;
-	    },
-
-	    // Update a collection by `set`-ing a new list of models, adding new ones,
-	    // removing models that are no longer present, and merging models that
-	    // already exist in the collection, as necessary. Similar to **Model#set**,
-	    // the core operation for updating the data contained by the collection.
-	    set: function(models, options) {
-	      options = _.defaults({}, options, setOptions);
-	      if (options.parse) models = this.parse(models, options);
-	      var singular = !_.isArray(models);
-	      models = singular ? (models ? [models] : []) : _.clone(models);
-	      var i, l, id, model, attrs, existing, sort;
-	      var at = options.at;
-	      var targetModel = this.model;
-	      var sortable = this.comparator && (at == null) && options.sort !== false;
-	      var sortAttr = _.isString(this.comparator) ? this.comparator : null;
-	      var toAdd = [], toRemove = [], modelMap = {};
-	      var add = options.add, merge = options.merge, remove = options.remove;
-	      var order = !sortable && add && remove ? [] : false;
-
-	      // Turn bare objects into model references, and prevent invalid models
-	      // from being added.
-	      for (i = 0, l = models.length; i < l; i++) {
-	        attrs = models[i] || {};
-	        if (attrs instanceof Model) {
-	          id = model = attrs;
-	        } else {
-	          id = attrs[targetModel.prototype.idAttribute || 'id'];
-	        }
-
-	        // If a duplicate is found, prevent it from being added and
-	        // optionally merge it into the existing model.
-	        if (existing = this.get(id)) {
-	          if (remove) modelMap[existing.cid] = true;
-	          if (merge) {
-	            attrs = attrs === model ? model.attributes : attrs;
-	            if (options.parse) attrs = existing.parse(attrs, options);
-	            existing.set(attrs, options);
-	            if (sortable && !sort && existing.hasChanged(sortAttr)) sort = true;
-	          }
-	          models[i] = existing;
-
-	        // If this is a new, valid model, push it to the `toAdd` list.
-	        } else if (add) {
-	          model = models[i] = this._prepareModel(attrs, options);
-	          if (!model) continue;
-	          toAdd.push(model);
-	          this._addReference(model, options);
-	        }
-
-	        // Do not add multiple models with the same `id`.
-	        model = existing || model;
-	        if (order && (model.isNew() || !modelMap[model.id])) order.push(model);
-	        modelMap[model.id] = true;
-	      }
-
-	      // Remove nonexistent models if appropriate.
-	      if (remove) {
-	        for (i = 0, l = this.length; i < l; ++i) {
-	          if (!modelMap[(model = this.models[i]).cid]) toRemove.push(model);
-	        }
-	        if (toRemove.length) this.remove(toRemove, options);
-	      }
-
-	      // See if sorting is needed, update `length` and splice in new models.
-	      if (toAdd.length || (order && order.length)) {
-	        if (sortable) sort = true;
-	        this.length += toAdd.length;
-	        if (at != null) {
-	          for (i = 0, l = toAdd.length; i < l; i++) {
-	            this.models.splice(at + i, 0, toAdd[i]);
-	          }
-	        } else {
-	          if (order) this.models.length = 0;
-	          var orderedModels = order || toAdd;
-	          for (i = 0, l = orderedModels.length; i < l; i++) {
-	            this.models.push(orderedModels[i]);
-	          }
-	        }
-	      }
-
-	      // Silently sort the collection if appropriate.
-	      if (sort) this.sort({silent: true});
-
-	      // Unless silenced, it's time to fire all appropriate add/sort events.
-	      if (!options.silent) {
-	        for (i = 0, l = toAdd.length; i < l; i++) {
-	          (model = toAdd[i]).trigger('add', model, this, options);
-	        }
-	        if (sort || (order && order.length)) this.trigger('sort', this, options);
-	      }
-
-	      // Return the added (or merged) model (or models).
-	      return singular ? models[0] : models;
-	    },
-
-	    // When you have more items than you want to add or remove individually,
-	    // you can reset the entire set with a new list of models, without firing
-	    // any granular `add` or `remove` events. Fires `reset` when finished.
-	    // Useful for bulk operations and optimizations.
-	    reset: function(models, options) {
-	      options || (options = {});
-	      for (var i = 0, l = this.models.length; i < l; i++) {
-	        this._removeReference(this.models[i], options);
-	      }
-	      options.previousModels = this.models;
-	      this._reset();
-	      models = this.add(models, _.extend({silent: true}, options));
-	      if (!options.silent) this.trigger('reset', this, options);
-	      return models;
-	    },
-
-	    // Add a model to the end of the collection.
-	    push: function(model, options) {
-	      return this.add(model, _.extend({at: this.length}, options));
-	    },
-
-	    // Remove a model from the end of the collection.
-	    pop: function(options) {
-	      var model = this.at(this.length - 1);
-	      this.remove(model, options);
-	      return model;
-	    },
-
-	    // Add a model to the beginning of the collection.
-	    unshift: function(model, options) {
-	      return this.add(model, _.extend({at: 0}, options));
-	    },
-
-	    // Remove a model from the beginning of the collection.
-	    shift: function(options) {
-	      var model = this.at(0);
-	      this.remove(model, options);
-	      return model;
-	    },
-
-	    // Slice out a sub-array of models from the collection.
-	    slice: function() {
-	      return slice.apply(this.models, arguments);
-	    },
-
-	    // Get a model from the set by id.
-	    get: function(obj) {
-	      if (obj == null) return void 0;
-	      return this._byId[obj] || this._byId[obj.id] || this._byId[obj.cid];
-	    },
-
-	    // Get the model at the given index.
-	    at: function(index) {
-	      return this.models[index];
-	    },
-
-	    // Return models with matching attributes. Useful for simple cases of
-	    // `filter`.
-	    where: function(attrs, first) {
-	      if (_.isEmpty(attrs)) return first ? void 0 : [];
-	      return this[first ? 'find' : 'filter'](function(model) {
-	        for (var key in attrs) {
-	          if (attrs[key] !== model.get(key)) return false;
-	        }
-	        return true;
-	      });
-	    },
-
-	    // Return the first model with matching attributes. Useful for simple cases
-	    // of `find`.
-	    findWhere: function(attrs) {
-	      return this.where(attrs, true);
-	    },
-
-	    // Force the collection to re-sort itself. You don't need to call this under
-	    // normal circumstances, as the set will maintain sort order as each item
-	    // is added.
-	    sort: function(options) {
-	      if (!this.comparator) throw new Error('Cannot sort a set without a comparator');
-	      options || (options = {});
-
-	      // Run sort based on type of `comparator`.
-	      if (_.isString(this.comparator) || this.comparator.length === 1) {
-	        this.models = this.sortBy(this.comparator, this);
-	      } else {
-	        this.models.sort(_.bind(this.comparator, this));
-	      }
-
-	      if (!options.silent) this.trigger('sort', this, options);
-	      return this;
-	    },
-
-	    // Pluck an attribute from each model in the collection.
-	    pluck: function(attr) {
-	      return _.invoke(this.models, 'get', attr);
-	    },
-
-	    // Fetch the default set of models for this collection, resetting the
-	    // collection when they arrive. If `reset: true` is passed, the response
-	    // data will be passed through the `reset` method instead of `set`.
-	    fetch: function(options) {
-	      options = options ? _.clone(options) : {};
-	      if (options.parse === void 0) options.parse = true;
-	      var success = options.success;
-	      var collection = this;
-	      options.success = function(resp) {
-	        var method = options.reset ? 'reset' : 'set';
-	        collection[method](resp, options);
-	        if (success) success(collection, resp, options);
-	        collection.trigger('sync', collection, resp, options);
-	      };
-	      wrapError(this, options);
-	      return this.sync('read', this, options);
-	    },
-
-	    // Create a new instance of a model in this collection. Add the model to the
-	    // collection immediately, unless `wait: true` is passed, in which case we
-	    // wait for the server to agree.
-	    create: function(model, options) {
-	      options = options ? _.clone(options) : {};
-	      if (!(model = this._prepareModel(model, options))) return false;
-	      if (!options.wait) this.add(model, options);
-	      var collection = this;
-	      var success = options.success;
-	      options.success = function(model, resp) {
-	        if (options.wait) collection.add(model, options);
-	        if (success) success(model, resp, options);
-	      };
-	      model.save(null, options);
-	      return model;
-	    },
-
-	    // **parse** converts a response into a list of models to be added to the
-	    // collection. The default implementation is just to pass it through.
-	    parse: function(resp, options) {
-	      return resp;
-	    },
-
-	    // Create a new collection with an identical list of models as this one.
-	    clone: function() {
-	      return new this.constructor(this.models);
-	    },
-
-	    // Private method to reset all internal state. Called when the collection
-	    // is first initialized or reset.
-	    _reset: function() {
-	      this.length = 0;
-	      this.models = [];
-	      this._byId  = {};
-	    },
-
-	    // Prepare a hash of attributes (or other model) to be added to this
-	    // collection.
-	    _prepareModel: function(attrs, options) {
-	      if (attrs instanceof Model) return attrs;
-	      options = options ? _.clone(options) : {};
-	      options.collection = this;
-	      var model = new this.model(attrs, options);
-	      if (!model.validationError) return model;
-	      this.trigger('invalid', this, model.validationError, options);
-	      return false;
-	    },
-
-	    // Internal method to create a model's ties to a collection.
-	    _addReference: function(model, options) {
-	      this._byId[model.cid] = model;
-	      if (model.id != null) this._byId[model.id] = model;
-	      if (!model.collection) model.collection = this;
-	      model.on('all', this._onModelEvent, this);
-	    },
-
-	    // Internal method to sever a model's ties to a collection.
-	    _removeReference: function(model, options) {
-	      if (this === model.collection) delete model.collection;
-	      model.off('all', this._onModelEvent, this);
-	    },
-
-	    // Internal method called every time a model in the set fires an event.
-	    // Sets need to update their indexes when models change ids. All other
-	    // events simply proxy through. "add" and "remove" events that originate
-	    // in other collections are ignored.
-	    _onModelEvent: function(event, model, collection, options) {
-	      if ((event === 'add' || event === 'remove') && collection !== this) return;
-	      if (event === 'destroy') this.remove(model, options);
-	      if (model && event === 'change:' + model.idAttribute) {
-	        delete this._byId[model.previous(model.idAttribute)];
-	        if (model.id != null) this._byId[model.id] = model;
-	      }
-	      this.trigger.apply(this, arguments);
-	    }
-
-	  });
-
-	  // Underscore methods that we want to implement on the Collection.
-	  // 90% of the core usefulness of Backbone Collections is actually implemented
-	  // right here:
-	  var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
-	    'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
-	    'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
-	    'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
-	    'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
-	    'lastIndexOf', 'isEmpty', 'chain', 'sample'];
-
-	  // Mix in each Underscore method as a proxy to `Collection#models`.
-	  _.each(methods, function(method) {
-	    Collection.prototype[method] = function() {
-	      var args = slice.call(arguments);
-	      args.unshift(this.models);
-	      return _[method].apply(_, args);
-	    };
-	  });
-
-	  // Underscore methods that take a property name as an argument.
-	  var attributeMethods = ['groupBy', 'countBy', 'sortBy', 'indexBy'];
-
-	  // Use attributes instead of properties.
-	  _.each(attributeMethods, function(method) {
-	    Collection.prototype[method] = function(value, context) {
-	      var iterator = _.isFunction(value) ? value : function(model) {
-	        return model.get(value);
-	      };
-	      return _[method](this.models, iterator, context);
-	    };
-	  });
-
-	  // Backbone.View
-	  // -------------
-
-	  // Backbone Views are almost more convention than they are actual code. A View
-	  // is simply a JavaScript object that represents a logical chunk of UI in the
-	  // DOM. This might be a single item, an entire list, a sidebar or panel, or
-	  // even the surrounding frame which wraps your whole app. Defining a chunk of
-	  // UI as a **View** allows you to define your DOM events declaratively, without
-	  // having to worry about render order ... and makes it easy for the view to
-	  // react to specific changes in the state of your models.
-
-	  // Creating a Backbone.View creates its initial element outside of the DOM,
-	  // if an existing element is not provided...
-	  var View = Backbone.View = function(options) {
-	    this.cid = _.uniqueId('view');
-	    options || (options = {});
-	    _.extend(this, _.pick(options, viewOptions));
-	    this._ensureElement();
-	    this.initialize.apply(this, arguments);
-	    this.delegateEvents();
-	  };
-
-	  // Cached regex to split keys for `delegate`.
-	  var delegateEventSplitter = /^(\S+)\s*(.*)$/;
-
-	  // List of view options to be merged as properties.
-	  var viewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events'];
-
-	  // Set up all inheritable **Backbone.View** properties and methods.
-	  _.extend(View.prototype, Events, {
-
-	    // The default `tagName` of a View's element is `"div"`.
-	    tagName: 'div',
-
-	    // jQuery delegate for element lookup, scoped to DOM elements within the
-	    // current view. This should be preferred to global lookups where possible.
-	    $: function(selector) {
-	      return this.$el.find(selector);
-	    },
-
-	    // Initialize is an empty function by default. Override it with your own
-	    // initialization logic.
-	    initialize: function(){},
-
-	    // **render** is the core function that your view should override, in order
-	    // to populate its element (`this.el`), with the appropriate HTML. The
-	    // convention is for **render** to always return `this`.
-	    render: function() {
-	      return this;
-	    },
-
-	    // Remove this view by taking the element out of the DOM, and removing any
-	    // applicable Backbone.Events listeners.
-	    remove: function() {
-	      this.$el.remove();
-	      this.stopListening();
-	      return this;
-	    },
-
-	    // Change the view's element (`this.el` property), including event
-	    // re-delegation.
-	    setElement: function(element, delegate) {
-	      if (this.$el) this.undelegateEvents();
-	      this.$el = element instanceof Backbone.$ ? element : Backbone.$(element);
-	      this.el = this.$el[0];
-	      if (delegate !== false) this.delegateEvents();
-	      return this;
-	    },
-
-	    // Set callbacks, where `this.events` is a hash of
-	    //
-	    // *{"event selector": "callback"}*
-	    //
-	    //     {
-	    //       'mousedown .title':  'edit',
-	    //       'click .button':     'save',
-	    //       'click .open':       function(e) { ... }
-	    //     }
-	    //
-	    // pairs. Callbacks will be bound to the view, with `this` set properly.
-	    // Uses event delegation for efficiency.
-	    // Omitting the selector binds the event to `this.el`.
-	    // This only works for delegate-able events: not `focus`, `blur`, and
-	    // not `change`, `submit`, and `reset` in Internet Explorer.
-	    delegateEvents: function(events) {
-	      if (!(events || (events = _.result(this, 'events')))) return this;
-	      this.undelegateEvents();
-	      for (var key in events) {
-	        var method = events[key];
-	        if (!_.isFunction(method)) method = this[events[key]];
-	        if (!method) continue;
-
-	        var match = key.match(delegateEventSplitter);
-	        var eventName = match[1], selector = match[2];
-	        method = _.bind(method, this);
-	        eventName += '.delegateEvents' + this.cid;
-	        if (selector === '') {
-	          this.$el.on(eventName, method);
-	        } else {
-	          this.$el.on(eventName, selector, method);
-	        }
-	      }
-	      return this;
-	    },
-
-	    // Clears all callbacks previously bound to the view with `delegateEvents`.
-	    // You usually don't need to use this, but may wish to if you have multiple
-	    // Backbone views attached to the same DOM element.
-	    undelegateEvents: function() {
-	      this.$el.off('.delegateEvents' + this.cid);
-	      return this;
-	    },
-
-	    // Ensure that the View has a DOM element to render into.
-	    // If `this.el` is a string, pass it through `$()`, take the first
-	    // matching element, and re-assign it to `el`. Otherwise, create
-	    // an element from the `id`, `className` and `tagName` properties.
-	    _ensureElement: function() {
-	      if (!this.el) {
-	        var attrs = _.extend({}, _.result(this, 'attributes'));
-	        if (this.id) attrs.id = _.result(this, 'id');
-	        if (this.className) attrs['class'] = _.result(this, 'className');
-	        var $el = Backbone.$('<' + _.result(this, 'tagName') + '>').attr(attrs);
-	        this.setElement($el, false);
-	      } else {
-	        this.setElement(_.result(this, 'el'), false);
-	      }
-	    }
-
-	  });
-
-	  // Backbone.sync
-	  // -------------
-
-	  // Override this function to change the manner in which Backbone persists
-	  // models to the server. You will be passed the type of request, and the
-	  // model in question. By default, makes a RESTful Ajax request
-	  // to the model's `url()`. Some possible customizations could be:
-	  //
-	  // * Use `setTimeout` to batch rapid-fire updates into a single request.
-	  // * Send up the models as XML instead of JSON.
-	  // * Persist models via WebSockets instead of Ajax.
-	  //
-	  // Turn on `Backbone.emulateHTTP` in order to send `PUT` and `DELETE` requests
-	  // as `POST`, with a `_method` parameter containing the true HTTP method,
-	  // as well as all requests with the body as `application/x-www-form-urlencoded`
-	  // instead of `application/json` with the model in a param named `model`.
-	  // Useful when interfacing with server-side languages like **PHP** that make
-	  // it difficult to read the body of `PUT` requests.
-	  Backbone.sync = function(method, model, options) {
-	    var type = methodMap[method];
-
-	    // Default options, unless specified.
-	    _.defaults(options || (options = {}), {
-	      emulateHTTP: Backbone.emulateHTTP,
-	      emulateJSON: Backbone.emulateJSON
-	    });
-
-	    // Default JSON-request options.
-	    var params = {type: type, dataType: 'json'};
-
-	    // Ensure that we have a URL.
-	    if (!options.url) {
-	      params.url = _.result(model, 'url') || urlError();
-	    }
-
-	    // Ensure that we have the appropriate request data.
-	    if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
-	      params.contentType = 'application/json';
-	      params.data = JSON.stringify(options.attrs || model.toJSON(options));
-	    }
-
-	    // For older servers, emulate JSON by encoding the request into an HTML-form.
-	    if (options.emulateJSON) {
-	      params.contentType = 'application/x-www-form-urlencoded';
-	      params.data = params.data ? {model: params.data} : {};
-	    }
-
-	    // For older servers, emulate HTTP by mimicking the HTTP method with `_method`
-	    // And an `X-HTTP-Method-Override` header.
-	    if (options.emulateHTTP && (type === 'PUT' || type === 'DELETE' || type === 'PATCH')) {
-	      params.type = 'POST';
-	      if (options.emulateJSON) params.data._method = type;
-	      var beforeSend = options.beforeSend;
-	      options.beforeSend = function(xhr) {
-	        xhr.setRequestHeader('X-HTTP-Method-Override', type);
-	        if (beforeSend) return beforeSend.apply(this, arguments);
-	      };
-	    }
-
-	    // Don't process data on a non-GET request.
-	    if (params.type !== 'GET' && !options.emulateJSON) {
-	      params.processData = false;
-	    }
-
-	    // If we're sending a `PATCH` request, and we're in an old Internet Explorer
-	    // that still has ActiveX enabled by default, override jQuery to use that
-	    // for XHR instead. Remove this line when jQuery supports `PATCH` on IE8.
-	    if (params.type === 'PATCH' && noXhrPatch) {
-	      params.xhr = function() {
-	        return new ActiveXObject("Microsoft.XMLHTTP");
-	      };
-	    }
-
-	    // Make the request, allowing the user to override any Ajax options.
-	    var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
-	    model.trigger('request', model, xhr, options);
-	    return xhr;
-	  };
-
-	  var noXhrPatch =
-	    typeof window !== 'undefined' && !!window.ActiveXObject &&
-	      !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
-
-	  // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
-	  var methodMap = {
-	    'create': 'POST',
-	    'update': 'PUT',
-	    'patch':  'PATCH',
-	    'delete': 'DELETE',
-	    'read':   'GET'
-	  };
-
-	  // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
-	  // Override this if you'd like to use a different library.
-	  Backbone.ajax = function() {
-	    return Backbone.$.ajax.apply(Backbone.$, arguments);
-	  };
-
-	  // Backbone.Router
-	  // ---------------
-
-	  // Routers map faux-URLs to actions, and fire events when routes are
-	  // matched. Creating a new one sets its `routes` hash, if not set statically.
-	  var Router = Backbone.Router = function(options) {
-	    options || (options = {});
-	    if (options.routes) this.routes = options.routes;
-	    this._bindRoutes();
-	    this.initialize.apply(this, arguments);
-	  };
-
-	  // Cached regular expressions for matching named param parts and splatted
-	  // parts of route strings.
-	  var optionalParam = /\((.*?)\)/g;
-	  var namedParam    = /(\(\?)?:\w+/g;
-	  var splatParam    = /\*\w+/g;
-	  var escapeRegExp  = /[\-{}\[\]+?.,\\\^$|#\s]/g;
-
-	  // Set up all inheritable **Backbone.Router** properties and methods.
-	  _.extend(Router.prototype, Events, {
-
-	    // Initialize is an empty function by default. Override it with your own
-	    // initialization logic.
-	    initialize: function(){},
-
-	    // Manually bind a single named route to a callback. For example:
-	    //
-	    //     this.route('search/:query/p:num', 'search', function(query, num) {
-	    //       ...
-	    //     });
-	    //
-	    route: function(route, name, callback) {
-	      if (!_.isRegExp(route)) route = this._routeToRegExp(route);
-	      if (_.isFunction(name)) {
-	        callback = name;
-	        name = '';
-	      }
-	      if (!callback) callback = this[name];
-	      var router = this;
-	      Backbone.history.route(route, function(fragment) {
-	        var args = router._extractParameters(route, fragment);
-	        router.execute(callback, args);
-	        router.trigger.apply(router, ['route:' + name].concat(args));
-	        router.trigger('route', name, args);
-	        Backbone.history.trigger('route', router, name, args);
-	      });
-	      return this;
-	    },
-
-	    // Execute a route handler with the provided parameters.  This is an
-	    // excellent place to do pre-route setup or post-route cleanup.
-	    execute: function(callback, args) {
-	      if (callback) callback.apply(this, args);
-	    },
-
-	    // Simple proxy to `Backbone.history` to save a fragment into the history.
-	    navigate: function(fragment, options) {
-	      Backbone.history.navigate(fragment, options);
-	      return this;
-	    },
-
-	    // Bind all defined routes to `Backbone.history`. We have to reverse the
-	    // order of the routes here to support behavior where the most general
-	    // routes can be defined at the bottom of the route map.
-	    _bindRoutes: function() {
-	      if (!this.routes) return;
-	      this.routes = _.result(this, 'routes');
-	      var route, routes = _.keys(this.routes);
-	      while ((route = routes.pop()) != null) {
-	        this.route(route, this.routes[route]);
-	      }
-	    },
-
-	    // Convert a route string into a regular expression, suitable for matching
-	    // against the current location hash.
-	    _routeToRegExp: function(route) {
-	      route = route.replace(escapeRegExp, '\\$&')
-	                   .replace(optionalParam, '(?:$1)?')
-	                   .replace(namedParam, function(match, optional) {
-	                     return optional ? match : '([^/?]+)';
-	                   })
-	                   .replace(splatParam, '([^?]*?)');
-	      return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
-	    },
-
-	    // Given a route, and a URL fragment that it matches, return the array of
-	    // extracted decoded parameters. Empty or unmatched parameters will be
-	    // treated as `null` to normalize cross-browser behavior.
-	    _extractParameters: function(route, fragment) {
-	      var params = route.exec(fragment).slice(1);
-	      return _.map(params, function(param, i) {
-	        // Don't decode the search params.
-	        if (i === params.length - 1) return param || null;
-	        return param ? decodeURIComponent(param) : null;
-	      });
-	    }
-
-	  });
-
-	  // Backbone.History
-	  // ----------------
-
-	  // Handles cross-browser history management, based on either
-	  // [pushState](http://diveintohtml5.info/history.html) and real URLs, or
-	  // [onhashchange](https://developer.mozilla.org/en-US/docs/DOM/window.onhashchange)
-	  // and URL fragments. If the browser supports neither (old IE, natch),
-	  // falls back to polling.
-	  var History = Backbone.History = function() {
-	    this.handlers = [];
-	    _.bindAll(this, 'checkUrl');
-
-	    // Ensure that `History` can be used outside of the browser.
-	    if (typeof window !== 'undefined') {
-	      this.location = window.location;
-	      this.history = window.history;
-	    }
-	  };
-
-	  // Cached regex for stripping a leading hash/slash and trailing space.
-	  var routeStripper = /^[#\/]|\s+$/g;
-
-	  // Cached regex for stripping leading and trailing slashes.
-	  var rootStripper = /^\/+|\/+$/g;
-
-	  // Cached regex for detecting MSIE.
-	  var isExplorer = /msie [\w.]+/;
-
-	  // Cached regex for removing a trailing slash.
-	  var trailingSlash = /\/$/;
-
-	  // Cached regex for stripping urls of hash.
-	  var pathStripper = /#.*$/;
-
-	  // Has the history handling already been started?
-	  History.started = false;
-
-	  // Set up all inheritable **Backbone.History** properties and methods.
-	  _.extend(History.prototype, Events, {
-
-	    // The default interval to poll for hash changes, if necessary, is
-	    // twenty times a second.
-	    interval: 50,
-
-	    // Are we at the app root?
-	    atRoot: function() {
-	      return this.location.pathname.replace(/[^\/]$/, '$&/') === this.root;
-	    },
-
-	    // Gets the true hash value. Cannot use location.hash directly due to bug
-	    // in Firefox where location.hash will always be decoded.
-	    getHash: function(window) {
-	      var match = (window || this).location.href.match(/#(.*)$/);
-	      return match ? match[1] : '';
-	    },
-
-	    // Get the cross-browser normalized URL fragment, either from the URL,
-	    // the hash, or the override.
-	    getFragment: function(fragment, forcePushState) {
-	      if (fragment == null) {
-	        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-	          fragment = decodeURI(this.location.pathname + this.location.search);
-	          var root = this.root.replace(trailingSlash, '');
-	          if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
-	        } else {
-	          fragment = this.getHash();
-	        }
-	      }
-	      return fragment.replace(routeStripper, '');
-	    },
-
-	    // Start the hash change handling, returning `true` if the current URL matches
-	    // an existing route, and `false` otherwise.
-	    start: function(options) {
-	      if (History.started) throw new Error("Backbone.history has already been started");
-	      History.started = true;
-
-	      // Figure out the initial configuration. Do we need an iframe?
-	      // Is pushState desired ... is it available?
-	      this.options          = _.extend({root: '/'}, this.options, options);
-	      this.root             = this.options.root;
-	      this._wantsHashChange = this.options.hashChange !== false;
-	      this._wantsPushState  = !!this.options.pushState;
-	      this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
-	      var fragment          = this.getFragment();
-	      var docMode           = document.documentMode;
-	      var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
-
-	      // Normalize root to always include a leading and trailing slash.
-	      this.root = ('/' + this.root + '/').replace(rootStripper, '/');
-
-	      if (oldIE && this._wantsHashChange) {
-	        var frame = Backbone.$('<iframe src="javascript:0" tabindex="-1">');
-	        this.iframe = frame.hide().appendTo('body')[0].contentWindow;
-	        this.navigate(fragment);
-	      }
-
-	      // Depending on whether we're using pushState or hashes, and whether
-	      // 'onhashchange' is supported, determine how we check the URL state.
-	      if (this._hasPushState) {
-	        Backbone.$(window).on('popstate', this.checkUrl);
-	      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-	        Backbone.$(window).on('hashchange', this.checkUrl);
-	      } else if (this._wantsHashChange) {
-	        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
-	      }
-
-	      // Determine if we need to change the base url, for a pushState link
-	      // opened by a non-pushState browser.
-	      this.fragment = fragment;
-	      var loc = this.location;
-
-	      // Transition from hashChange to pushState or vice versa if both are
-	      // requested.
-	      if (this._wantsHashChange && this._wantsPushState) {
-
-	        // If we've started off with a route from a `pushState`-enabled
-	        // browser, but we're currently in a browser that doesn't support it...
-	        if (!this._hasPushState && !this.atRoot()) {
-	          this.fragment = this.getFragment(null, true);
-	          this.location.replace(this.root + '#' + this.fragment);
-	          // Return immediately as browser will do redirect to new url
-	          return true;
-
-	        // Or if we've started out with a hash-based route, but we're currently
-	        // in a browser where it could be `pushState`-based instead...
-	        } else if (this._hasPushState && this.atRoot() && loc.hash) {
-	          this.fragment = this.getHash().replace(routeStripper, '');
-	          this.history.replaceState({}, document.title, this.root + this.fragment);
-	        }
-
-	      }
-
-	      if (!this.options.silent) return this.loadUrl();
-	    },
-
-	    // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
-	    // but possibly useful for unit testing Routers.
-	    stop: function() {
-	      Backbone.$(window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
-	      if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
-	      History.started = false;
-	    },
-
-	    // Add a route to be tested when the fragment changes. Routes added later
-	    // may override previous routes.
-	    route: function(route, callback) {
-	      this.handlers.unshift({route: route, callback: callback});
-	    },
-
-	    // Checks the current URL to see if it has changed, and if it has,
-	    // calls `loadUrl`, normalizing across the hidden iframe.
-	    checkUrl: function(e) {
-	      var current = this.getFragment();
-	      if (current === this.fragment && this.iframe) {
-	        current = this.getFragment(this.getHash(this.iframe));
-	      }
-	      if (current === this.fragment) return false;
-	      if (this.iframe) this.navigate(current);
-	      this.loadUrl();
-	    },
-
-	    // Attempt to load the current URL fragment. If a route succeeds with a
-	    // match, returns `true`. If no defined routes matches the fragment,
-	    // returns `false`.
-	    loadUrl: function(fragment) {
-	      fragment = this.fragment = this.getFragment(fragment);
-	      return _.any(this.handlers, function(handler) {
-	        if (handler.route.test(fragment)) {
-	          handler.callback(fragment);
-	          return true;
-	        }
-	      });
-	    },
-
-	    // Save a fragment into the hash history, or replace the URL state if the
-	    // 'replace' option is passed. You are responsible for properly URL-encoding
-	    // the fragment in advance.
-	    //
-	    // The options object can contain `trigger: true` if you wish to have the
-	    // route callback be fired (not usually desirable), or `replace: true`, if
-	    // you wish to modify the current URL without adding an entry to the history.
-	    navigate: function(fragment, options) {
-	      if (!History.started) return false;
-	      if (!options || options === true) options = {trigger: !!options};
-
-	      var url = this.root + (fragment = this.getFragment(fragment || ''));
-
-	      // Strip the hash for matching.
-	      fragment = fragment.replace(pathStripper, '');
-
-	      if (this.fragment === fragment) return;
-	      this.fragment = fragment;
-
-	      // Don't include a trailing slash on the root.
-	      if (fragment === '' && url !== '/') url = url.slice(0, -1);
-
-	      // If pushState is available, we use it to set the fragment as a real URL.
-	      if (this._hasPushState) {
-	        this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
-
-	      // If hash changes haven't been explicitly disabled, update the hash
-	      // fragment to store history.
-	      } else if (this._wantsHashChange) {
-	        this._updateHash(this.location, fragment, options.replace);
-	        if (this.iframe && (fragment !== this.getFragment(this.getHash(this.iframe)))) {
-	          // Opening and closing the iframe tricks IE7 and earlier to push a
-	          // history entry on hash-tag change.  When replace is true, we don't
-	          // want this.
-	          if(!options.replace) this.iframe.document.open().close();
-	          this._updateHash(this.iframe.location, fragment, options.replace);
-	        }
-
-	      // If you've told us that you explicitly don't want fallback hashchange-
-	      // based history, then `navigate` becomes a page refresh.
-	      } else {
-	        return this.location.assign(url);
-	      }
-	      if (options.trigger) return this.loadUrl(fragment);
-	    },
-
-	    // Update the hash location, either replacing the current entry, or adding
-	    // a new one to the browser history.
-	    _updateHash: function(location, fragment, replace) {
-	      if (replace) {
-	        var href = location.href.replace(/(javascript:|#).*$/, '');
-	        location.replace(href + '#' + fragment);
-	      } else {
-	        // Some browsers require that `hash` contains a leading #.
-	        location.hash = '#' + fragment;
-	      }
-	    }
-
-	  });
-
-	  // Create the default Backbone.history.
-	  Backbone.history = new History;
-
-	  // Helpers
-	  // -------
-
-	  // Helper function to correctly set up the prototype chain, for subclasses.
-	  // Similar to `goog.inherits`, but uses a hash of prototype properties and
-	  // class properties to be extended.
-	  var extend = function(protoProps, staticProps) {
-	    var parent = this;
-	    var child;
-
-	    // The constructor function for the new subclass is either defined by you
-	    // (the "constructor" property in your `extend` definition), or defaulted
-	    // by us to simply call the parent's constructor.
-	    if (protoProps && _.has(protoProps, 'constructor')) {
-	      child = protoProps.constructor;
-	    } else {
-	      child = function(){ return parent.apply(this, arguments); };
-	    }
-
-	    // Add static properties to the constructor function, if supplied.
-	    _.extend(child, parent, staticProps);
-
-	    // Set the prototype chain to inherit from `parent`, without calling
-	    // `parent`'s constructor function.
-	    var Surrogate = function(){ this.constructor = child; };
-	    Surrogate.prototype = parent.prototype;
-	    child.prototype = new Surrogate;
-
-	    // Add prototype properties (instance properties) to the subclass,
-	    // if supplied.
-	    if (protoProps) _.extend(child.prototype, protoProps);
-
-	    // Set a convenience property in case the parent's prototype is needed
-	    // later.
-	    child.__super__ = parent.prototype;
-
-	    return child;
-	  };
-
-	  // Set up inheritance for the model, collection, router, view and history.
-	  Model.extend = Collection.extend = Router.extend = View.extend = History.extend = extend;
-
-	  // Throw an error when a URL is needed, and none is supplied.
-	  var urlError = function() {
-	    throw new Error('A "url" property or function must be specified');
-	  };
-
-	  // Wrap an optional error callback with a fallback error event.
-	  var wrapError = function(model, options) {
-	    var error = options.error;
-	    options.error = function(resp) {
-	      if (error) error(model, resp, options);
-	      model.trigger('error', model, resp, options);
-	    };
-	  };
-
-	  return Backbone;
-
-	}));
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */var React = __webpack_require__(13);
+	/** @jsx React.DOM */var React = __webpack_require__(8);
 	var Markdown = __webpack_require__(14);
 
 	module.exports = React.createClass({displayName: 'exports',
@@ -14330,10 +14338,10 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/** @jsx React.DOM */var React = __webpack_require__(13);
+	/** @jsx React.DOM */var React = __webpack_require__(8);
 	var _ = __webpack_require__(7);
 	var Markdown = __webpack_require__(14);
 
@@ -14365,10 +14373,10 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/** @jsx React.DOM */var React = __webpack_require__(13);
+	/** @jsx React.DOM */var React = __webpack_require__(8);
 
 	module.exports = React.createClass({displayName: 'exports',
 	  render: function() {
@@ -14386,18 +14394,11 @@
 
 
 /***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM */module.exports = __webpack_require__(16);
-
-
-/***/ },
 /* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM */var converter = new Showdown.converter();
-	var React = __webpack_require__(13);
+	var React = __webpack_require__(8);
 
 	module.exports = React.createClass({displayName: 'exports',
 	  render: function() {
@@ -17269,12 +17270,12 @@
 	"use strict";
 
 	var ReactDescriptor = __webpack_require__(27);
-	var ReactOwner = __webpack_require__(52);
-	var ReactUpdates = __webpack_require__(56);
+	var ReactOwner = __webpack_require__(49);
+	var ReactUpdates = __webpack_require__(50);
 
 	var invariant = __webpack_require__(46);
-	var keyMirror = __webpack_require__(58);
-	var merge = __webpack_require__(59);
+	var keyMirror = __webpack_require__(51);
+	var merge = __webpack_require__(52);
 
 	/**
 	 * Every React component is in one of these life cycles.
@@ -17725,20 +17726,20 @@
 	var ReactContext = __webpack_require__(25);
 	var ReactCurrentOwner = __webpack_require__(26);
 	var ReactDescriptor = __webpack_require__(27);
-	var ReactDescriptorValidator = __webpack_require__(49);
-	var ReactEmptyComponent = __webpack_require__(50);
-	var ReactErrorUtils = __webpack_require__(51);
-	var ReactOwner = __webpack_require__(52);
+	var ReactDescriptorValidator = __webpack_require__(53);
+	var ReactEmptyComponent = __webpack_require__(54);
+	var ReactErrorUtils = __webpack_require__(55);
+	var ReactOwner = __webpack_require__(49);
 	var ReactPerf = __webpack_require__(34);
-	var ReactPropTransferer = __webpack_require__(53);
-	var ReactPropTypeLocations = __webpack_require__(54);
-	var ReactPropTypeLocationNames = __webpack_require__(55);
-	var ReactUpdates = __webpack_require__(56);
+	var ReactPropTransferer = __webpack_require__(56);
+	var ReactPropTypeLocations = __webpack_require__(57);
+	var ReactPropTypeLocationNames = __webpack_require__(58);
+	var ReactUpdates = __webpack_require__(50);
 
-	var instantiateReactComponent = __webpack_require__(57);
+	var instantiateReactComponent = __webpack_require__(59);
 	var invariant = __webpack_require__(46);
-	var keyMirror = __webpack_require__(58);
-	var merge = __webpack_require__(59);
+	var keyMirror = __webpack_require__(51);
+	var merge = __webpack_require__(52);
 	var mixInto = __webpack_require__(60);
 	var monitorCodeUse = __webpack_require__(61);
 	var mapObject = __webpack_require__(62);
@@ -19153,7 +19154,7 @@
 
 	"use strict";
 
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 
 	/**
 	 * Keeps track of the current context.
@@ -19274,7 +19275,7 @@
 	var ReactContext = __webpack_require__(25);
 	var ReactCurrentOwner = __webpack_require__(26);
 
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 	var warning = __webpack_require__(39);
 
 	/**
@@ -19531,7 +19532,7 @@
 	"use strict";
 
 	var ReactDescriptor = __webpack_require__(27);
-	var ReactDescriptorValidator = __webpack_require__(49);
+	var ReactDescriptorValidator = __webpack_require__(53);
 	var ReactDOMComponent = __webpack_require__(29);
 
 	var mergeInto = __webpack_require__(64);
@@ -19761,7 +19762,7 @@
 	var escapeTextForBrowser = __webpack_require__(43);
 	var invariant = __webpack_require__(46);
 	var keyOf = __webpack_require__(68);
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 	var mixInto = __webpack_require__(60);
 
 	var deleteListener = ReactBrowserEventEmitter.deleteListener;
@@ -20172,37 +20173,37 @@
 
 	"use strict";
 
-	var BeforeInputEventPlugin = __webpack_require__(77);
-	var ChangeEventPlugin = __webpack_require__(78);
-	var ClientReactRootIndex = __webpack_require__(79);
-	var CompositionEventPlugin = __webpack_require__(80);
-	var DefaultEventPluginOrder = __webpack_require__(81);
-	var EnterLeaveEventPlugin = __webpack_require__(82);
+	var BeforeInputEventPlugin = __webpack_require__(69);
+	var ChangeEventPlugin = __webpack_require__(70);
+	var ClientReactRootIndex = __webpack_require__(71);
+	var CompositionEventPlugin = __webpack_require__(72);
+	var DefaultEventPluginOrder = __webpack_require__(73);
+	var EnterLeaveEventPlugin = __webpack_require__(74);
 	var ExecutionEnvironment = __webpack_require__(40);
-	var HTMLDOMPropertyConfig = __webpack_require__(83);
-	var MobileSafariClickEventPlugin = __webpack_require__(84);
+	var HTMLDOMPropertyConfig = __webpack_require__(75);
+	var MobileSafariClickEventPlugin = __webpack_require__(76);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactComponentBrowserEnvironment =
-	  __webpack_require__(85);
-	var ReactDefaultBatchingStrategy = __webpack_require__(86);
+	  __webpack_require__(77);
+	var ReactDefaultBatchingStrategy = __webpack_require__(78);
 	var ReactDOM = __webpack_require__(28);
-	var ReactDOMButton = __webpack_require__(87);
-	var ReactDOMForm = __webpack_require__(88);
-	var ReactDOMImg = __webpack_require__(89);
-	var ReactDOMInput = __webpack_require__(90);
-	var ReactDOMOption = __webpack_require__(91);
-	var ReactDOMSelect = __webpack_require__(92);
-	var ReactDOMTextarea = __webpack_require__(93);
-	var ReactEventListener = __webpack_require__(94);
-	var ReactInjection = __webpack_require__(95);
+	var ReactDOMButton = __webpack_require__(79);
+	var ReactDOMForm = __webpack_require__(80);
+	var ReactDOMImg = __webpack_require__(81);
+	var ReactDOMInput = __webpack_require__(82);
+	var ReactDOMOption = __webpack_require__(83);
+	var ReactDOMSelect = __webpack_require__(84);
+	var ReactDOMTextarea = __webpack_require__(85);
+	var ReactEventListener = __webpack_require__(86);
+	var ReactInjection = __webpack_require__(87);
 	var ReactInstanceHandles = __webpack_require__(31);
 	var ReactMount = __webpack_require__(32);
-	var SelectEventPlugin = __webpack_require__(96);
-	var ServerReactRootIndex = __webpack_require__(97);
-	var SimpleEventPlugin = __webpack_require__(98);
-	var SVGDOMPropertyConfig = __webpack_require__(99);
+	var SelectEventPlugin = __webpack_require__(88);
+	var ServerReactRootIndex = __webpack_require__(89);
+	var SimpleEventPlugin = __webpack_require__(90);
+	var SVGDOMPropertyConfig = __webpack_require__(91);
 
-	var createFullPageComponent = __webpack_require__(100);
+	var createFullPageComponent = __webpack_require__(92);
 
 	function inject() {
 	  ReactInjection.EventEmitter.injectReactEventListener(
@@ -20271,7 +20272,7 @@
 	  if ("production" !== process.env.NODE_ENV) {
 	    var url = (ExecutionEnvironment.canUseDOM && window.location.href) || '';
 	    if ((/[?&]react_perf\b/).test(url)) {
-	      var ReactDefaultPerf = __webpack_require__(101);
+	      var ReactDefaultPerf = __webpack_require__(93);
 	      ReactDefaultPerf.start();
 	    }
 	  }
@@ -20308,7 +20309,7 @@
 
 	"use strict";
 
-	var ReactRootIndex = __webpack_require__(69);
+	var ReactRootIndex = __webpack_require__(94);
 
 	var invariant = __webpack_require__(46);
 
@@ -20659,9 +20660,9 @@
 	var ReactInstanceHandles = __webpack_require__(31);
 	var ReactPerf = __webpack_require__(34);
 
-	var containsNode = __webpack_require__(70);
-	var getReactRootElementInContainer = __webpack_require__(71);
-	var instantiateReactComponent = __webpack_require__(57);
+	var containsNode = __webpack_require__(95);
+	var getReactRootElementInContainer = __webpack_require__(96);
+	var instantiateReactComponent = __webpack_require__(59);
 	var invariant = __webpack_require__(46);
 	var shouldUpdateReactComponent = __webpack_require__(63);
 	var warning = __webpack_require__(39);
@@ -21342,10 +21343,10 @@
 	"use strict";
 
 	var ReactComponent = __webpack_require__(23);
-	var ReactMultiChildUpdateTypes = __webpack_require__(72);
+	var ReactMultiChildUpdateTypes = __webpack_require__(97);
 
-	var flattenChildren = __webpack_require__(73);
-	var instantiateReactComponent = __webpack_require__(57);
+	var flattenChildren = __webpack_require__(98);
+	var instantiateReactComponent = __webpack_require__(59);
 	var shouldUpdateReactComponent = __webpack_require__(63);
 
 	/**
@@ -21869,9 +21870,9 @@
 	"use strict";
 
 	var ReactDescriptor = __webpack_require__(27);
-	var ReactPropTypeLocationNames = __webpack_require__(55);
+	var ReactPropTypeLocationNames = __webpack_require__(58);
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 
 	/**
 	 * Collection of methods that allow declaration and validation of props that are
@@ -22219,11 +22220,11 @@
 
 	var ReactDescriptor = __webpack_require__(27);
 	var ReactInstanceHandles = __webpack_require__(31);
-	var ReactMarkupChecksum = __webpack_require__(75);
+	var ReactMarkupChecksum = __webpack_require__(100);
 	var ReactServerRenderingTransaction =
-	  __webpack_require__(76);
+	  __webpack_require__(101);
 
-	var instantiateReactComponent = __webpack_require__(57);
+	var instantiateReactComponent = __webpack_require__(59);
 	var invariant = __webpack_require__(46);
 
 	/**
@@ -22476,7 +22477,7 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -23058,7 +23059,7 @@
 
 	"use strict";
 
-	var keyMirror = __webpack_require__(58);
+	var keyMirror = __webpack_require__(51);
 
 	var PropagationPhases = keyMirror({bubbled: null, captured: null});
 
@@ -23514,6 +23515,552 @@
 /* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactOwner
+	 */
+
+	"use strict";
+
+	var emptyObject = __webpack_require__(102);
+	var invariant = __webpack_require__(46);
+
+	/**
+	 * ReactOwners are capable of storing references to owned components.
+	 *
+	 * All components are capable of //being// referenced by owner components, but
+	 * only ReactOwner components are capable of //referencing// owned components.
+	 * The named reference is known as a "ref".
+	 *
+	 * Refs are available when mounted and updated during reconciliation.
+	 *
+	 *   var MyComponent = React.createClass({
+	 *     render: function() {
+	 *       return (
+	 *         <div onClick={this.handleClick}>
+	 *           <CustomComponent ref="custom" />
+	 *         </div>
+	 *       );
+	 *     },
+	 *     handleClick: function() {
+	 *       this.refs.custom.handleClick();
+	 *     },
+	 *     componentDidMount: function() {
+	 *       this.refs.custom.initialize();
+	 *     }
+	 *   });
+	 *
+	 * Refs should rarely be used. When refs are used, they should only be done to
+	 * control data that is not handled by React's data flow.
+	 *
+	 * @class ReactOwner
+	 */
+	var ReactOwner = {
+
+	  /**
+	   * @param {?object} object
+	   * @return {boolean} True if `object` is a valid owner.
+	   * @final
+	   */
+	  isValidOwner: function(object) {
+	    return !!(
+	      object &&
+	      typeof object.attachRef === 'function' &&
+	      typeof object.detachRef === 'function'
+	    );
+	  },
+
+	  /**
+	   * Adds a component by ref to an owner component.
+	   *
+	   * @param {ReactComponent} component Component to reference.
+	   * @param {string} ref Name by which to refer to the component.
+	   * @param {ReactOwner} owner Component on which to record the ref.
+	   * @final
+	   * @internal
+	   */
+	  addComponentAsRefTo: function(component, ref, owner) {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      ReactOwner.isValidOwner(owner),
+	      'addComponentAsRefTo(...): Only a ReactOwner can have refs. This ' +
+	      'usually means that you\'re trying to add a ref to a component that ' +
+	      'doesn\'t have an owner (that is, was not created inside of another ' +
+	      'component\'s `render` method). Try rendering this component inside of ' +
+	      'a new top-level component which will hold the ref.'
+	    ) : invariant(ReactOwner.isValidOwner(owner)));
+	    owner.attachRef(ref, component);
+	  },
+
+	  /**
+	   * Removes a component by ref from an owner component.
+	   *
+	   * @param {ReactComponent} component Component to dereference.
+	   * @param {string} ref Name of the ref to remove.
+	   * @param {ReactOwner} owner Component on which the ref is recorded.
+	   * @final
+	   * @internal
+	   */
+	  removeComponentAsRefFrom: function(component, ref, owner) {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      ReactOwner.isValidOwner(owner),
+	      'removeComponentAsRefFrom(...): Only a ReactOwner can have refs. This ' +
+	      'usually means that you\'re trying to remove a ref to a component that ' +
+	      'doesn\'t have an owner (that is, was not created inside of another ' +
+	      'component\'s `render` method). Try rendering this component inside of ' +
+	      'a new top-level component which will hold the ref.'
+	    ) : invariant(ReactOwner.isValidOwner(owner)));
+	    // Check that `component` is still the current ref because we do not want to
+	    // detach the ref if another component stole it.
+	    if (owner.refs[ref] === component) {
+	      owner.detachRef(ref);
+	    }
+	  },
+
+	  /**
+	   * A ReactComponent must mix this in to have refs.
+	   *
+	   * @lends {ReactOwner.prototype}
+	   */
+	  Mixin: {
+
+	    construct: function() {
+	      this.refs = emptyObject;
+	    },
+
+	    /**
+	     * Lazily allocates the refs object and stores `component` as `ref`.
+	     *
+	     * @param {string} ref Reference name.
+	     * @param {component} component Component to store as `ref`.
+	     * @final
+	     * @private
+	     */
+	    attachRef: function(ref, component) {
+	      ("production" !== process.env.NODE_ENV ? invariant(
+	        component.isOwnedBy(this),
+	        'attachRef(%s, ...): Only a component\'s owner can store a ref to it.',
+	        ref
+	      ) : invariant(component.isOwnedBy(this)));
+	      var refs = this.refs === emptyObject ? (this.refs = {}) : this.refs;
+	      refs[ref] = component;
+	    },
+
+	    /**
+	     * Detaches a reference name.
+	     *
+	     * @param {string} ref Name to dereference.
+	     * @final
+	     * @private
+	     */
+	    detachRef: function(ref) {
+	      delete this.refs[ref];
+	    }
+
+	  }
+
+	};
+
+	module.exports = ReactOwner;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 50 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactUpdates
+	 */
+
+	"use strict";
+
+	var CallbackQueue = __webpack_require__(103);
+	var PooledClass = __webpack_require__(47);
+	var ReactCurrentOwner = __webpack_require__(26);
+	var ReactPerf = __webpack_require__(34);
+	var Transaction = __webpack_require__(104);
+
+	var invariant = __webpack_require__(46);
+	var mixInto = __webpack_require__(60);
+	var warning = __webpack_require__(39);
+
+	var dirtyComponents = [];
+
+	var batchingStrategy = null;
+
+	function ensureInjected() {
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    ReactUpdates.ReactReconcileTransaction && batchingStrategy,
+	    'ReactUpdates: must inject a reconcile transaction class and batching ' +
+	    'strategy'
+	  ) : invariant(ReactUpdates.ReactReconcileTransaction && batchingStrategy));
+	}
+
+	var NESTED_UPDATES = {
+	  initialize: function() {
+	    this.dirtyComponentsLength = dirtyComponents.length;
+	  },
+	  close: function() {
+	    if (this.dirtyComponentsLength !== dirtyComponents.length) {
+	      // Additional updates were enqueued by componentDidUpdate handlers or
+	      // similar; before our own UPDATE_QUEUEING wrapper closes, we want to run
+	      // these new updates so that if A's componentDidUpdate calls setState on
+	      // B, B will update before the callback A's updater provided when calling
+	      // setState.
+	      dirtyComponents.splice(0, this.dirtyComponentsLength);
+	      flushBatchedUpdates();
+	    } else {
+	      dirtyComponents.length = 0;
+	    }
+	  }
+	};
+
+	var UPDATE_QUEUEING = {
+	  initialize: function() {
+	    this.callbackQueue.reset();
+	  },
+	  close: function() {
+	    this.callbackQueue.notifyAll();
+	  }
+	};
+
+	var TRANSACTION_WRAPPERS = [NESTED_UPDATES, UPDATE_QUEUEING];
+
+	function ReactUpdatesFlushTransaction() {
+	  this.reinitializeTransaction();
+	  this.dirtyComponentsLength = null;
+	  this.callbackQueue = CallbackQueue.getPooled(null);
+	  this.reconcileTransaction =
+	    ReactUpdates.ReactReconcileTransaction.getPooled();
+	}
+
+	mixInto(ReactUpdatesFlushTransaction, Transaction.Mixin);
+	mixInto(ReactUpdatesFlushTransaction, {
+	  getTransactionWrappers: function() {
+	    return TRANSACTION_WRAPPERS;
+	  },
+
+	  destructor: function() {
+	    this.dirtyComponentsLength = null;
+	    CallbackQueue.release(this.callbackQueue);
+	    this.callbackQueue = null;
+	    ReactUpdates.ReactReconcileTransaction.release(this.reconcileTransaction);
+	    this.reconcileTransaction = null;
+	  },
+
+	  perform: function(method, scope, a) {
+	    // Essentially calls `this.reconcileTransaction.perform(method, scope, a)`
+	    // with this transaction's wrappers around it.
+	    return Transaction.Mixin.perform.call(
+	      this,
+	      this.reconcileTransaction.perform,
+	      this.reconcileTransaction,
+	      method,
+	      scope,
+	      a
+	    );
+	  }
+	});
+
+	PooledClass.addPoolingTo(ReactUpdatesFlushTransaction);
+
+	function batchedUpdates(callback, a, b) {
+	  ensureInjected();
+	  batchingStrategy.batchedUpdates(callback, a, b);
+	}
+
+	/**
+	 * Array comparator for ReactComponents by owner depth
+	 *
+	 * @param {ReactComponent} c1 first component you're comparing
+	 * @param {ReactComponent} c2 second component you're comparing
+	 * @return {number} Return value usable by Array.prototype.sort().
+	 */
+	function mountDepthComparator(c1, c2) {
+	  return c1._mountDepth - c2._mountDepth;
+	}
+
+	function runBatchedUpdates(transaction) {
+	  var len = transaction.dirtyComponentsLength;
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    len === dirtyComponents.length,
+	    'Expected flush transaction\'s stored dirty-components length (%s) to ' +
+	    'match dirty-components array length (%s).',
+	    len,
+	    dirtyComponents.length
+	  ) : invariant(len === dirtyComponents.length));
+
+	  // Since reconciling a component higher in the owner hierarchy usually (not
+	  // always -- see shouldComponentUpdate()) will reconcile children, reconcile
+	  // them before their children by sorting the array.
+	  dirtyComponents.sort(mountDepthComparator);
+
+	  for (var i = 0; i < len; i++) {
+	    // If a component is unmounted before pending changes apply, ignore them
+	    // TODO: Queue unmounts in the same list to avoid this happening at all
+	    var component = dirtyComponents[i];
+	    if (component.isMounted()) {
+	      // If performUpdateIfNecessary happens to enqueue any new updates, we
+	      // shouldn't execute the callbacks until the next render happens, so
+	      // stash the callbacks first
+	      var callbacks = component._pendingCallbacks;
+	      component._pendingCallbacks = null;
+	      component.performUpdateIfNecessary(transaction.reconcileTransaction);
+
+	      if (callbacks) {
+	        for (var j = 0; j < callbacks.length; j++) {
+	          transaction.callbackQueue.enqueue(
+	            callbacks[j],
+	            component
+	          );
+	        }
+	      }
+	    }
+	  }
+	}
+
+	var flushBatchedUpdates = ReactPerf.measure(
+	  'ReactUpdates',
+	  'flushBatchedUpdates',
+	  function() {
+	    // ReactUpdatesFlushTransaction's wrappers will clear the dirtyComponents
+	    // array and perform any updates enqueued by mount-ready handlers (i.e.,
+	    // componentDidUpdate) but we need to check here too in order to catch
+	    // updates enqueued by setState callbacks.
+	    while (dirtyComponents.length) {
+	      var transaction = ReactUpdatesFlushTransaction.getPooled();
+	      transaction.perform(runBatchedUpdates, null, transaction);
+	      ReactUpdatesFlushTransaction.release(transaction);
+	    }
+	  }
+	);
+
+	/**
+	 * Mark a component as needing a rerender, adding an optional callback to a
+	 * list of functions which will be executed once the rerender occurs.
+	 */
+	function enqueueUpdate(component, callback) {
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    !callback || typeof callback === "function",
+	    'enqueueUpdate(...): You called `setProps`, `replaceProps`, ' +
+	    '`setState`, `replaceState`, or `forceUpdate` with a callback that ' +
+	    'isn\'t callable.'
+	  ) : invariant(!callback || typeof callback === "function"));
+	  ensureInjected();
+
+	  // Various parts of our code (such as ReactCompositeComponent's
+	  // _renderValidatedComponent) assume that calls to render aren't nested;
+	  // verify that that's the case. (This is called by each top-level update
+	  // function, like setProps, setState, forceUpdate, etc.; creation and
+	  // destruction of top-level components is guarded in ReactMount.)
+	  ("production" !== process.env.NODE_ENV ? warning(
+	    ReactCurrentOwner.current == null,
+	    'enqueueUpdate(): Render methods should be a pure function of props ' +
+	    'and state; triggering nested component updates from render is not ' +
+	    'allowed. If necessary, trigger nested updates in ' +
+	    'componentDidUpdate.'
+	  ) : null);
+
+	  if (!batchingStrategy.isBatchingUpdates) {
+	    batchingStrategy.batchedUpdates(enqueueUpdate, component, callback);
+	    return;
+	  }
+
+	  dirtyComponents.push(component);
+
+	  if (callback) {
+	    if (component._pendingCallbacks) {
+	      component._pendingCallbacks.push(callback);
+	    } else {
+	      component._pendingCallbacks = [callback];
+	    }
+	  }
+	}
+
+	var ReactUpdatesInjection = {
+	  injectReconcileTransaction: function(ReconcileTransaction) {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      ReconcileTransaction,
+	      'ReactUpdates: must provide a reconcile transaction class'
+	    ) : invariant(ReconcileTransaction));
+	    ReactUpdates.ReactReconcileTransaction = ReconcileTransaction;
+	  },
+
+	  injectBatchingStrategy: function(_batchingStrategy) {
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      _batchingStrategy,
+	      'ReactUpdates: must provide a batching strategy'
+	    ) : invariant(_batchingStrategy));
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      typeof _batchingStrategy.batchedUpdates === 'function',
+	      'ReactUpdates: must provide a batchedUpdates() function'
+	    ) : invariant(typeof _batchingStrategy.batchedUpdates === 'function'));
+	    ("production" !== process.env.NODE_ENV ? invariant(
+	      typeof _batchingStrategy.isBatchingUpdates === 'boolean',
+	      'ReactUpdates: must provide an isBatchingUpdates boolean attribute'
+	    ) : invariant(typeof _batchingStrategy.isBatchingUpdates === 'boolean'));
+	    batchingStrategy = _batchingStrategy;
+	  }
+	};
+
+	var ReactUpdates = {
+	  /**
+	   * React references `ReactReconcileTransaction` using this property in order
+	   * to allow dependency injection.
+	   *
+	   * @internal
+	   */
+	  ReactReconcileTransaction: null,
+
+	  batchedUpdates: batchedUpdates,
+	  enqueueUpdate: enqueueUpdate,
+	  flushBatchedUpdates: flushBatchedUpdates,
+	  injection: ReactUpdatesInjection
+	};
+
+	module.exports = ReactUpdates;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule keyMirror
+	 * @typechecks static-only
+	 */
+
+	"use strict";
+
+	var invariant = __webpack_require__(46);
+
+	/**
+	 * Constructs an enumeration with keys equal to their value.
+	 *
+	 * For example:
+	 *
+	 *   var COLORS = keyMirror({blue: null, red: null});
+	 *   var myColor = COLORS.blue;
+	 *   var isColorValid = !!COLORS[myColor];
+	 *
+	 * The last line could not be performed if the values of the generated enum were
+	 * not equal to their keys.
+	 *
+	 *   Input:  {key1: val1, key2: val2}
+	 *   Output: {key1: key1, key2: key2}
+	 *
+	 * @param {object} obj
+	 * @return {object}
+	 */
+	var keyMirror = function(obj) {
+	  var ret = {};
+	  var key;
+	  ("production" !== process.env.NODE_ENV ? invariant(
+	    obj instanceof Object && !Array.isArray(obj),
+	    'keyMirror(...): Argument must be an object.'
+	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
+	  for (key in obj) {
+	    if (!obj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    ret[key] = key;
+	  }
+	  return ret;
+	};
+
+	module.exports = keyMirror;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule merge
+	 */
+
+	"use strict";
+
+	var mergeInto = __webpack_require__(64);
+
+	/**
+	 * Shallow merges two structures into a return value, without mutating either.
+	 *
+	 * @param {?object} one Optional object with properties to merge from.
+	 * @param {?object} two Optional object with properties to merge from.
+	 * @return {object} The shallow extension of one by two.
+	 */
+	var merge = function(one, two) {
+	  var result = {};
+	  mergeInto(result, one);
+	  mergeInto(result, two);
+	  return result;
+	};
+
+	module.exports = merge;
+
+
+/***/ },
+/* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/** @jsx React.DOM *//**
 	 * Copyright 2014 Facebook, Inc.
 	 *
@@ -23542,7 +24089,7 @@
 	"use strict";
 
 	var ReactDescriptor = __webpack_require__(27);
-	var ReactPropTypeLocations = __webpack_require__(54);
+	var ReactPropTypeLocations = __webpack_require__(57);
 	var ReactCurrentOwner = __webpack_require__(26);
 
 	var monitorCodeUse = __webpack_require__(61);
@@ -23800,7 +24347,7 @@
 
 
 /***/ },
-/* 50 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -23885,7 +24432,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 51 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -23928,173 +24475,7 @@
 
 
 /***/ },
-/* 52 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactOwner
-	 */
-
-	"use strict";
-
-	var emptyObject = __webpack_require__(118);
-	var invariant = __webpack_require__(46);
-
-	/**
-	 * ReactOwners are capable of storing references to owned components.
-	 *
-	 * All components are capable of //being// referenced by owner components, but
-	 * only ReactOwner components are capable of //referencing// owned components.
-	 * The named reference is known as a "ref".
-	 *
-	 * Refs are available when mounted and updated during reconciliation.
-	 *
-	 *   var MyComponent = React.createClass({
-	 *     render: function() {
-	 *       return (
-	 *         <div onClick={this.handleClick}>
-	 *           <CustomComponent ref="custom" />
-	 *         </div>
-	 *       );
-	 *     },
-	 *     handleClick: function() {
-	 *       this.refs.custom.handleClick();
-	 *     },
-	 *     componentDidMount: function() {
-	 *       this.refs.custom.initialize();
-	 *     }
-	 *   });
-	 *
-	 * Refs should rarely be used. When refs are used, they should only be done to
-	 * control data that is not handled by React's data flow.
-	 *
-	 * @class ReactOwner
-	 */
-	var ReactOwner = {
-
-	  /**
-	   * @param {?object} object
-	   * @return {boolean} True if `object` is a valid owner.
-	   * @final
-	   */
-	  isValidOwner: function(object) {
-	    return !!(
-	      object &&
-	      typeof object.attachRef === 'function' &&
-	      typeof object.detachRef === 'function'
-	    );
-	  },
-
-	  /**
-	   * Adds a component by ref to an owner component.
-	   *
-	   * @param {ReactComponent} component Component to reference.
-	   * @param {string} ref Name by which to refer to the component.
-	   * @param {ReactOwner} owner Component on which to record the ref.
-	   * @final
-	   * @internal
-	   */
-	  addComponentAsRefTo: function(component, ref, owner) {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      ReactOwner.isValidOwner(owner),
-	      'addComponentAsRefTo(...): Only a ReactOwner can have refs. This ' +
-	      'usually means that you\'re trying to add a ref to a component that ' +
-	      'doesn\'t have an owner (that is, was not created inside of another ' +
-	      'component\'s `render` method). Try rendering this component inside of ' +
-	      'a new top-level component which will hold the ref.'
-	    ) : invariant(ReactOwner.isValidOwner(owner)));
-	    owner.attachRef(ref, component);
-	  },
-
-	  /**
-	   * Removes a component by ref from an owner component.
-	   *
-	   * @param {ReactComponent} component Component to dereference.
-	   * @param {string} ref Name of the ref to remove.
-	   * @param {ReactOwner} owner Component on which the ref is recorded.
-	   * @final
-	   * @internal
-	   */
-	  removeComponentAsRefFrom: function(component, ref, owner) {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      ReactOwner.isValidOwner(owner),
-	      'removeComponentAsRefFrom(...): Only a ReactOwner can have refs. This ' +
-	      'usually means that you\'re trying to remove a ref to a component that ' +
-	      'doesn\'t have an owner (that is, was not created inside of another ' +
-	      'component\'s `render` method). Try rendering this component inside of ' +
-	      'a new top-level component which will hold the ref.'
-	    ) : invariant(ReactOwner.isValidOwner(owner)));
-	    // Check that `component` is still the current ref because we do not want to
-	    // detach the ref if another component stole it.
-	    if (owner.refs[ref] === component) {
-	      owner.detachRef(ref);
-	    }
-	  },
-
-	  /**
-	   * A ReactComponent must mix this in to have refs.
-	   *
-	   * @lends {ReactOwner.prototype}
-	   */
-	  Mixin: {
-
-	    construct: function() {
-	      this.refs = emptyObject;
-	    },
-
-	    /**
-	     * Lazily allocates the refs object and stores `component` as `ref`.
-	     *
-	     * @param {string} ref Reference name.
-	     * @param {component} component Component to store as `ref`.
-	     * @final
-	     * @private
-	     */
-	    attachRef: function(ref, component) {
-	      ("production" !== process.env.NODE_ENV ? invariant(
-	        component.isOwnedBy(this),
-	        'attachRef(%s, ...): Only a component\'s owner can store a ref to it.',
-	        ref
-	      ) : invariant(component.isOwnedBy(this)));
-	      var refs = this.refs === emptyObject ? (this.refs = {}) : this.refs;
-	      refs[ref] = component;
-	    },
-
-	    /**
-	     * Detaches a reference name.
-	     *
-	     * @param {string} ref Name to dereference.
-	     * @final
-	     * @private
-	     */
-	    detachRef: function(ref) {
-	      delete this.refs[ref];
-	    }
-
-	  }
-
-	};
-
-	module.exports = ReactOwner;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 53 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -24117,10 +24498,10 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 	var invariant = __webpack_require__(46);
-	var joinClasses = __webpack_require__(117);
-	var merge = __webpack_require__(59);
+	var joinClasses = __webpack_require__(105);
+	var merge = __webpack_require__(52);
 
 	/**
 	 * Creates a transfer strategy that will merge prop values using the supplied
@@ -24263,7 +24644,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 54 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -24286,7 +24667,7 @@
 
 	"use strict";
 
-	var keyMirror = __webpack_require__(58);
+	var keyMirror = __webpack_require__(51);
 
 	var ReactPropTypeLocations = keyMirror({
 	  prop: null,
@@ -24298,7 +24679,7 @@
 
 
 /***/ },
-/* 55 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -24336,279 +24717,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactUpdates
-	 */
-
-	"use strict";
-
-	var CallbackQueue = __webpack_require__(102);
-	var PooledClass = __webpack_require__(47);
-	var ReactCurrentOwner = __webpack_require__(26);
-	var ReactPerf = __webpack_require__(34);
-	var Transaction = __webpack_require__(103);
-
-	var invariant = __webpack_require__(46);
-	var mixInto = __webpack_require__(60);
-	var warning = __webpack_require__(39);
-
-	var dirtyComponents = [];
-
-	var batchingStrategy = null;
-
-	function ensureInjected() {
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    ReactUpdates.ReactReconcileTransaction && batchingStrategy,
-	    'ReactUpdates: must inject a reconcile transaction class and batching ' +
-	    'strategy'
-	  ) : invariant(ReactUpdates.ReactReconcileTransaction && batchingStrategy));
-	}
-
-	var NESTED_UPDATES = {
-	  initialize: function() {
-	    this.dirtyComponentsLength = dirtyComponents.length;
-	  },
-	  close: function() {
-	    if (this.dirtyComponentsLength !== dirtyComponents.length) {
-	      // Additional updates were enqueued by componentDidUpdate handlers or
-	      // similar; before our own UPDATE_QUEUEING wrapper closes, we want to run
-	      // these new updates so that if A's componentDidUpdate calls setState on
-	      // B, B will update before the callback A's updater provided when calling
-	      // setState.
-	      dirtyComponents.splice(0, this.dirtyComponentsLength);
-	      flushBatchedUpdates();
-	    } else {
-	      dirtyComponents.length = 0;
-	    }
-	  }
-	};
-
-	var UPDATE_QUEUEING = {
-	  initialize: function() {
-	    this.callbackQueue.reset();
-	  },
-	  close: function() {
-	    this.callbackQueue.notifyAll();
-	  }
-	};
-
-	var TRANSACTION_WRAPPERS = [NESTED_UPDATES, UPDATE_QUEUEING];
-
-	function ReactUpdatesFlushTransaction() {
-	  this.reinitializeTransaction();
-	  this.dirtyComponentsLength = null;
-	  this.callbackQueue = CallbackQueue.getPooled(null);
-	  this.reconcileTransaction =
-	    ReactUpdates.ReactReconcileTransaction.getPooled();
-	}
-
-	mixInto(ReactUpdatesFlushTransaction, Transaction.Mixin);
-	mixInto(ReactUpdatesFlushTransaction, {
-	  getTransactionWrappers: function() {
-	    return TRANSACTION_WRAPPERS;
-	  },
-
-	  destructor: function() {
-	    this.dirtyComponentsLength = null;
-	    CallbackQueue.release(this.callbackQueue);
-	    this.callbackQueue = null;
-	    ReactUpdates.ReactReconcileTransaction.release(this.reconcileTransaction);
-	    this.reconcileTransaction = null;
-	  },
-
-	  perform: function(method, scope, a) {
-	    // Essentially calls `this.reconcileTransaction.perform(method, scope, a)`
-	    // with this transaction's wrappers around it.
-	    return Transaction.Mixin.perform.call(
-	      this,
-	      this.reconcileTransaction.perform,
-	      this.reconcileTransaction,
-	      method,
-	      scope,
-	      a
-	    );
-	  }
-	});
-
-	PooledClass.addPoolingTo(ReactUpdatesFlushTransaction);
-
-	function batchedUpdates(callback, a, b) {
-	  ensureInjected();
-	  batchingStrategy.batchedUpdates(callback, a, b);
-	}
-
-	/**
-	 * Array comparator for ReactComponents by owner depth
-	 *
-	 * @param {ReactComponent} c1 first component you're comparing
-	 * @param {ReactComponent} c2 second component you're comparing
-	 * @return {number} Return value usable by Array.prototype.sort().
-	 */
-	function mountDepthComparator(c1, c2) {
-	  return c1._mountDepth - c2._mountDepth;
-	}
-
-	function runBatchedUpdates(transaction) {
-	  var len = transaction.dirtyComponentsLength;
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    len === dirtyComponents.length,
-	    'Expected flush transaction\'s stored dirty-components length (%s) to ' +
-	    'match dirty-components array length (%s).',
-	    len,
-	    dirtyComponents.length
-	  ) : invariant(len === dirtyComponents.length));
-
-	  // Since reconciling a component higher in the owner hierarchy usually (not
-	  // always -- see shouldComponentUpdate()) will reconcile children, reconcile
-	  // them before their children by sorting the array.
-	  dirtyComponents.sort(mountDepthComparator);
-
-	  for (var i = 0; i < len; i++) {
-	    // If a component is unmounted before pending changes apply, ignore them
-	    // TODO: Queue unmounts in the same list to avoid this happening at all
-	    var component = dirtyComponents[i];
-	    if (component.isMounted()) {
-	      // If performUpdateIfNecessary happens to enqueue any new updates, we
-	      // shouldn't execute the callbacks until the next render happens, so
-	      // stash the callbacks first
-	      var callbacks = component._pendingCallbacks;
-	      component._pendingCallbacks = null;
-	      component.performUpdateIfNecessary(transaction.reconcileTransaction);
-
-	      if (callbacks) {
-	        for (var j = 0; j < callbacks.length; j++) {
-	          transaction.callbackQueue.enqueue(
-	            callbacks[j],
-	            component
-	          );
-	        }
-	      }
-	    }
-	  }
-	}
-
-	var flushBatchedUpdates = ReactPerf.measure(
-	  'ReactUpdates',
-	  'flushBatchedUpdates',
-	  function() {
-	    // ReactUpdatesFlushTransaction's wrappers will clear the dirtyComponents
-	    // array and perform any updates enqueued by mount-ready handlers (i.e.,
-	    // componentDidUpdate) but we need to check here too in order to catch
-	    // updates enqueued by setState callbacks.
-	    while (dirtyComponents.length) {
-	      var transaction = ReactUpdatesFlushTransaction.getPooled();
-	      transaction.perform(runBatchedUpdates, null, transaction);
-	      ReactUpdatesFlushTransaction.release(transaction);
-	    }
-	  }
-	);
-
-	/**
-	 * Mark a component as needing a rerender, adding an optional callback to a
-	 * list of functions which will be executed once the rerender occurs.
-	 */
-	function enqueueUpdate(component, callback) {
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    !callback || typeof callback === "function",
-	    'enqueueUpdate(...): You called `setProps`, `replaceProps`, ' +
-	    '`setState`, `replaceState`, or `forceUpdate` with a callback that ' +
-	    'isn\'t callable.'
-	  ) : invariant(!callback || typeof callback === "function"));
-	  ensureInjected();
-
-	  // Various parts of our code (such as ReactCompositeComponent's
-	  // _renderValidatedComponent) assume that calls to render aren't nested;
-	  // verify that that's the case. (This is called by each top-level update
-	  // function, like setProps, setState, forceUpdate, etc.; creation and
-	  // destruction of top-level components is guarded in ReactMount.)
-	  ("production" !== process.env.NODE_ENV ? warning(
-	    ReactCurrentOwner.current == null,
-	    'enqueueUpdate(): Render methods should be a pure function of props ' +
-	    'and state; triggering nested component updates from render is not ' +
-	    'allowed. If necessary, trigger nested updates in ' +
-	    'componentDidUpdate.'
-	  ) : null);
-
-	  if (!batchingStrategy.isBatchingUpdates) {
-	    batchingStrategy.batchedUpdates(enqueueUpdate, component, callback);
-	    return;
-	  }
-
-	  dirtyComponents.push(component);
-
-	  if (callback) {
-	    if (component._pendingCallbacks) {
-	      component._pendingCallbacks.push(callback);
-	    } else {
-	      component._pendingCallbacks = [callback];
-	    }
-	  }
-	}
-
-	var ReactUpdatesInjection = {
-	  injectReconcileTransaction: function(ReconcileTransaction) {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      ReconcileTransaction,
-	      'ReactUpdates: must provide a reconcile transaction class'
-	    ) : invariant(ReconcileTransaction));
-	    ReactUpdates.ReactReconcileTransaction = ReconcileTransaction;
-	  },
-
-	  injectBatchingStrategy: function(_batchingStrategy) {
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      _batchingStrategy,
-	      'ReactUpdates: must provide a batching strategy'
-	    ) : invariant(_batchingStrategy));
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      typeof _batchingStrategy.batchedUpdates === 'function',
-	      'ReactUpdates: must provide a batchedUpdates() function'
-	    ) : invariant(typeof _batchingStrategy.batchedUpdates === 'function'));
-	    ("production" !== process.env.NODE_ENV ? invariant(
-	      typeof _batchingStrategy.isBatchingUpdates === 'boolean',
-	      'ReactUpdates: must provide an isBatchingUpdates boolean attribute'
-	    ) : invariant(typeof _batchingStrategy.isBatchingUpdates === 'boolean'));
-	    batchingStrategy = _batchingStrategy;
-	  }
-	};
-
-	var ReactUpdates = {
-	  /**
-	   * React references `ReactReconcileTransaction` using this property in order
-	   * to allow dependency injection.
-	   *
-	   * @internal
-	   */
-	  ReactReconcileTransaction: null,
-
-	  batchedUpdates: batchedUpdates,
-	  enqueueUpdate: enqueueUpdate,
-	  flushBatchedUpdates: flushBatchedUpdates,
-	  injection: ReactUpdatesInjection
-	};
-
-	module.exports = ReactUpdates;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 57 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -24675,114 +24784,6 @@
 	module.exports = instantiateReactComponent;
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule keyMirror
-	 * @typechecks static-only
-	 */
-
-	"use strict";
-
-	var invariant = __webpack_require__(46);
-
-	/**
-	 * Constructs an enumeration with keys equal to their value.
-	 *
-	 * For example:
-	 *
-	 *   var COLORS = keyMirror({blue: null, red: null});
-	 *   var myColor = COLORS.blue;
-	 *   var isColorValid = !!COLORS[myColor];
-	 *
-	 * The last line could not be performed if the values of the generated enum were
-	 * not equal to their keys.
-	 *
-	 *   Input:  {key1: val1, key2: val2}
-	 *   Output: {key1: key1, key2: key2}
-	 *
-	 * @param {object} obj
-	 * @return {object}
-	 */
-	var keyMirror = function(obj) {
-	  var ret = {};
-	  var key;
-	  ("production" !== process.env.NODE_ENV ? invariant(
-	    obj instanceof Object && !Array.isArray(obj),
-	    'keyMirror(...): Argument must be an object.'
-	  ) : invariant(obj instanceof Object && !Array.isArray(obj)));
-	  for (key in obj) {
-	    if (!obj.hasOwnProperty(key)) {
-	      continue;
-	    }
-	    ret[key] = key;
-	  }
-	  return ret;
-	};
-
-	module.exports = keyMirror;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule merge
-	 */
-
-	"use strict";
-
-	var mergeInto = __webpack_require__(64);
-
-	/**
-	 * Shallow merges two structures into a return value, without mutating either.
-	 *
-	 * @param {?object} one Optional object with properties to merge from.
-	 * @param {?object} two Optional object with properties to merge from.
-	 * @return {object} The shallow extension of one by two.
-	 */
-	var merge = function(one, two) {
-	  var result = {};
-	  mergeInto(result, one);
-	  mergeInto(result, two);
-	  return result;
-	};
-
-	module.exports = merge;
-
 
 /***/ },
 /* 60 */
@@ -25001,7 +25002,7 @@
 
 	"use strict";
 
-	var mergeHelpers = __webpack_require__(104);
+	var mergeHelpers = __webpack_require__(106);
 
 	var checkMergeObjectArg = mergeHelpers.checkMergeObjectArg;
 	var checkMergeIntoObjectArg = mergeHelpers.checkMergeIntoObjectArg;
@@ -25053,10 +25054,10 @@
 
 	"use strict";
 
-	var CSSProperty = __webpack_require__(105);
+	var CSSProperty = __webpack_require__(107);
 
-	var dangerousStyleValue = __webpack_require__(106);
-	var hyphenateStyleName = __webpack_require__(107);
+	var dangerousStyleValue = __webpack_require__(108);
+	var hyphenateStyleName = __webpack_require__(109);
 	var memoizeStringOnly = __webpack_require__(44);
 
 	var processStyleName = memoizeStringOnly(function(styleName) {
@@ -25155,7 +25156,7 @@
 
 	"use strict";
 
-	var ReactEmptyComponent = __webpack_require__(50);
+	var ReactEmptyComponent = __webpack_require__(54);
 	var ReactMount = __webpack_require__(32);
 
 	var invariant = __webpack_require__(46);
@@ -25210,13 +25211,13 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPluginHub = __webpack_require__(108);
-	var EventPluginRegistry = __webpack_require__(109);
-	var ReactEventEmitterMixin = __webpack_require__(110);
-	var ViewportMetrics = __webpack_require__(111);
+	var EventPluginHub = __webpack_require__(110);
+	var EventPluginRegistry = __webpack_require__(111);
+	var ReactEventEmitterMixin = __webpack_require__(112);
+	var ViewportMetrics = __webpack_require__(113);
 
-	var isEventSupported = __webpack_require__(112);
-	var merge = __webpack_require__(59);
+	var isEventSupported = __webpack_require__(114);
+	var merge = __webpack_require__(52);
 
 	/**
 	 * Summary of `ReactBrowserEventEmitter` event handling:
@@ -25602,488 +25603,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactRootIndex
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var ReactRootIndexInjection = {
-	  /**
-	   * @param {function} _createReactRootIndex
-	   */
-	  injectCreateReactRootIndex: function(_createReactRootIndex) {
-	    ReactRootIndex.createReactRootIndex = _createReactRootIndex;
-	  }
-	};
-
-	var ReactRootIndex = {
-	  createReactRootIndex: null,
-	  injection: ReactRootIndexInjection
-	};
-
-	module.exports = ReactRootIndex;
-
-
-/***/ },
-/* 70 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule containsNode
-	 * @typechecks
-	 */
-
-	var isTextNode = __webpack_require__(113);
-
-	/*jslint bitwise:true */
-
-	/**
-	 * Checks if a given DOM node contains or is another DOM node.
-	 *
-	 * @param {?DOMNode} outerNode Outer DOM node.
-	 * @param {?DOMNode} innerNode Inner DOM node.
-	 * @return {boolean} True if `outerNode` contains or is `innerNode`.
-	 */
-	function containsNode(outerNode, innerNode) {
-	  if (!outerNode || !innerNode) {
-	    return false;
-	  } else if (outerNode === innerNode) {
-	    return true;
-	  } else if (isTextNode(outerNode)) {
-	    return false;
-	  } else if (isTextNode(innerNode)) {
-	    return containsNode(outerNode, innerNode.parentNode);
-	  } else if (outerNode.contains) {
-	    return outerNode.contains(innerNode);
-	  } else if (outerNode.compareDocumentPosition) {
-	    return !!(outerNode.compareDocumentPosition(innerNode) & 16);
-	  } else {
-	    return false;
-	  }
-	}
-
-	module.exports = containsNode;
-
-
-/***/ },
-/* 71 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule getReactRootElementInContainer
-	 */
-
-	"use strict";
-
-	var DOC_NODE_TYPE = 9;
-
-	/**
-	 * @param {DOMElement|DOMDocument} container DOM element that may contain
-	 *                                           a React component
-	 * @return {?*} DOM element that may have the reactRoot ID, or null.
-	 */
-	function getReactRootElementInContainer(container) {
-	  if (!container) {
-	    return null;
-	  }
-
-	  if (container.nodeType === DOC_NODE_TYPE) {
-	    return container.documentElement;
-	  } else {
-	    return container.firstChild;
-	  }
-	}
-
-	module.exports = getReactRootElementInContainer;
-
-
-/***/ },
-/* 72 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactMultiChildUpdateTypes
-	 */
-
-	"use strict";
-
-	var keyMirror = __webpack_require__(58);
-
-	/**
-	 * When a component's children are updated, a series of update configuration
-	 * objects are created in order to batch and serialize the required changes.
-	 *
-	 * Enumerates all the possible types of update configurations.
-	 *
-	 * @internal
-	 */
-	var ReactMultiChildUpdateTypes = keyMirror({
-	  INSERT_MARKUP: null,
-	  MOVE_EXISTING: null,
-	  REMOVE_NODE: null,
-	  TEXT_CONTENT: null
-	});
-
-	module.exports = ReactMultiChildUpdateTypes;
-
-
-/***/ },
-/* 73 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule flattenChildren
-	 */
-
-	"use strict";
-
-	var traverseAllChildren = __webpack_require__(48);
-	var warning = __webpack_require__(39);
-
-	/**
-	 * @param {function} traverseContext Context passed through traversal.
-	 * @param {?ReactComponent} child React child component.
-	 * @param {!string} name String name of key path to child.
-	 */
-	function flattenSingleChildIntoContext(traverseContext, child, name) {
-	  // We found a component instance.
-	  var result = traverseContext;
-	  var keyUnique = !result.hasOwnProperty(name);
-	  ("production" !== process.env.NODE_ENV ? warning(
-	    keyUnique,
-	    'flattenChildren(...): Encountered two children with the same key, ' +
-	    '`%s`. Child keys must be unique; when two children share a key, only ' +
-	    'the first child will be used.',
-	    name
-	  ) : null);
-	  if (keyUnique && child != null) {
-	    result[name] = child;
-	  }
-	}
-
-	/**
-	 * Flattens children that are typically specified as `props.children`. Any null
-	 * children will not be included in the resulting object.
-	 * @return {!object} flattened children keyed by name.
-	 */
-	function flattenChildren(children) {
-	  if (children == null) {
-	    return children;
-	  }
-	  var result = {};
-	  traverseAllChildren(children, flattenSingleChildIntoContext, result);
-	  return result;
-	}
-
-	module.exports = flattenChildren;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 74 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule emptyFunction
-	 */
-
-	var copyProperties = __webpack_require__(114);
-
-	function makeEmptyFunction(arg) {
-	  return function() {
-	    return arg;
-	  };
-	}
-
-	/**
-	 * This function accepts and discards inputs; it has no side effects. This is
-	 * primarily useful idiomatically for overridable function endpoints which
-	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
-	 */
-	function emptyFunction() {}
-
-	copyProperties(emptyFunction, {
-	  thatReturns: makeEmptyFunction,
-	  thatReturnsFalse: makeEmptyFunction(false),
-	  thatReturnsTrue: makeEmptyFunction(true),
-	  thatReturnsNull: makeEmptyFunction(null),
-	  thatReturnsThis: function() { return this; },
-	  thatReturnsArgument: function(arg) { return arg; }
-	});
-
-	module.exports = emptyFunction;
-
-
-/***/ },
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactMarkupChecksum
-	 */
-
-	"use strict";
-
-	var adler32 = __webpack_require__(115);
-
-	var ReactMarkupChecksum = {
-	  CHECKSUM_ATTR_NAME: 'data-react-checksum',
-
-	  /**
-	   * @param {string} markup Markup string
-	   * @return {string} Markup string with checksum attribute attached
-	   */
-	  addChecksumToMarkup: function(markup) {
-	    var checksum = adler32(markup);
-	    return markup.replace(
-	      '>',
-	      ' ' + ReactMarkupChecksum.CHECKSUM_ATTR_NAME + '="' + checksum + '">'
-	    );
-	  },
-
-	  /**
-	   * @param {string} markup to use
-	   * @param {DOMElement} element root React element
-	   * @returns {boolean} whether or not the markup is the same
-	   */
-	  canReuseMarkup: function(markup, element) {
-	    var existingChecksum = element.getAttribute(
-	      ReactMarkupChecksum.CHECKSUM_ATTR_NAME
-	    );
-	    existingChecksum = existingChecksum && parseInt(existingChecksum, 10);
-	    var markupChecksum = adler32(markup);
-	    return markupChecksum === existingChecksum;
-	  }
-	};
-
-	module.exports = ReactMarkupChecksum;
-
-
-/***/ },
-/* 76 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactServerRenderingTransaction
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var PooledClass = __webpack_require__(47);
-	var CallbackQueue = __webpack_require__(102);
-	var ReactPutListenerQueue = __webpack_require__(116);
-	var Transaction = __webpack_require__(103);
-
-	var emptyFunction = __webpack_require__(74);
-	var mixInto = __webpack_require__(60);
-
-	/**
-	 * Provides a `CallbackQueue` queue for collecting `onDOMReady` callbacks
-	 * during the performing of the transaction.
-	 */
-	var ON_DOM_READY_QUEUEING = {
-	  /**
-	   * Initializes the internal `onDOMReady` queue.
-	   */
-	  initialize: function() {
-	    this.reactMountReady.reset();
-	  },
-
-	  close: emptyFunction
-	};
-
-	var PUT_LISTENER_QUEUEING = {
-	  initialize: function() {
-	    this.putListenerQueue.reset();
-	  },
-
-	  close: emptyFunction
-	};
-
-	/**
-	 * Executed within the scope of the `Transaction` instance. Consider these as
-	 * being member methods, but with an implied ordering while being isolated from
-	 * each other.
-	 */
-	var TRANSACTION_WRAPPERS = [
-	  PUT_LISTENER_QUEUEING,
-	  ON_DOM_READY_QUEUEING
-	];
-
-	/**
-	 * @class ReactServerRenderingTransaction
-	 * @param {boolean} renderToStaticMarkup
-	 */
-	function ReactServerRenderingTransaction(renderToStaticMarkup) {
-	  this.reinitializeTransaction();
-	  this.renderToStaticMarkup = renderToStaticMarkup;
-	  this.reactMountReady = CallbackQueue.getPooled(null);
-	  this.putListenerQueue = ReactPutListenerQueue.getPooled();
-	}
-
-	var Mixin = {
-	  /**
-	   * @see Transaction
-	   * @abstract
-	   * @final
-	   * @return {array} Empty list of operation wrap proceedures.
-	   */
-	  getTransactionWrappers: function() {
-	    return TRANSACTION_WRAPPERS;
-	  },
-
-	  /**
-	   * @return {object} The queue to collect `onDOMReady` callbacks with.
-	   */
-	  getReactMountReady: function() {
-	    return this.reactMountReady;
-	  },
-
-	  getPutListenerQueue: function() {
-	    return this.putListenerQueue;
-	  },
-
-	  /**
-	   * `PooledClass` looks for this, and will invoke this before allowing this
-	   * instance to be resused.
-	   */
-	  destructor: function() {
-	    CallbackQueue.release(this.reactMountReady);
-	    this.reactMountReady = null;
-
-	    ReactPutListenerQueue.release(this.putListenerQueue);
-	    this.putListenerQueue = null;
-	  }
-	};
-
-
-	mixInto(ReactServerRenderingTransaction, Transaction.Mixin);
-	mixInto(ReactServerRenderingTransaction, Mixin);
-
-	PooledClass.addPoolingTo(ReactServerRenderingTransaction);
-
-	module.exports = ReactServerRenderingTransaction;
-
-
-/***/ },
-/* 77 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
 	 * Copyright 2013 Facebook, Inc.
 	 *
 	 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26105,9 +25624,9 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPropagators = __webpack_require__(119);
+	var EventPropagators = __webpack_require__(115);
 	var ExecutionEnvironment = __webpack_require__(40);
-	var SyntheticInputEvent = __webpack_require__(122);
+	var SyntheticInputEvent = __webpack_require__(116);
 
 	var keyOf = __webpack_require__(68);
 
@@ -26308,7 +25827,7 @@
 
 
 /***/ },
-/* 78 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -26332,14 +25851,14 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPluginHub = __webpack_require__(108);
-	var EventPropagators = __webpack_require__(119);
+	var EventPluginHub = __webpack_require__(110);
+	var EventPropagators = __webpack_require__(115);
 	var ExecutionEnvironment = __webpack_require__(40);
-	var ReactUpdates = __webpack_require__(56);
-	var SyntheticEvent = __webpack_require__(120);
+	var ReactUpdates = __webpack_require__(50);
+	var SyntheticEvent = __webpack_require__(117);
 
-	var isEventSupported = __webpack_require__(112);
-	var isTextInputElement = __webpack_require__(121);
+	var isEventSupported = __webpack_require__(114);
+	var isTextInputElement = __webpack_require__(118);
 	var keyOf = __webpack_require__(68);
 
 	var topLevelTypes = EventConstants.topLevelTypes;
@@ -26701,7 +26220,7 @@
 
 
 /***/ },
-/* 79 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -26737,7 +26256,7 @@
 
 
 /***/ },
-/* 80 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -26762,12 +26281,12 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPropagators = __webpack_require__(119);
+	var EventPropagators = __webpack_require__(115);
 	var ExecutionEnvironment = __webpack_require__(40);
-	var ReactInputSelection = __webpack_require__(123);
-	var SyntheticCompositionEvent = __webpack_require__(124);
+	var ReactInputSelection = __webpack_require__(119);
+	var SyntheticCompositionEvent = __webpack_require__(120);
 
-	var getTextContentAccessor = __webpack_require__(125);
+	var getTextContentAccessor = __webpack_require__(121);
 	var keyOf = __webpack_require__(68);
 
 	var END_KEYCODES = [9, 13, 27, 32]; // Tab, Return, Esc, Space
@@ -27007,7 +26526,7 @@
 
 
 /***/ },
-/* 81 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27058,7 +26577,7 @@
 
 
 /***/ },
-/* 82 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27083,8 +26602,8 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPropagators = __webpack_require__(119);
-	var SyntheticMouseEvent = __webpack_require__(126);
+	var EventPropagators = __webpack_require__(115);
+	var SyntheticMouseEvent = __webpack_require__(122);
 
 	var ReactMount = __webpack_require__(32);
 	var keyOf = __webpack_require__(68);
@@ -27209,7 +26728,7 @@
 
 
 /***/ },
-/* 83 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27404,7 +26923,7 @@
 
 
 /***/ },
-/* 84 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27430,7 +26949,7 @@
 
 	var EventConstants = __webpack_require__(45);
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 
 	var topLevelTypes = EventConstants.topLevelTypes;
 
@@ -27473,7 +26992,7 @@
 
 
 /***/ },
-/* 85 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -27498,15 +27017,15 @@
 
 	"use strict";
 
-	var ReactDOMIDOperations = __webpack_require__(127);
-	var ReactMarkupChecksum = __webpack_require__(75);
+	var ReactDOMIDOperations = __webpack_require__(123);
+	var ReactMarkupChecksum = __webpack_require__(100);
 	var ReactMount = __webpack_require__(32);
 	var ReactPerf = __webpack_require__(34);
-	var ReactReconcileTransaction = __webpack_require__(128);
+	var ReactReconcileTransaction = __webpack_require__(124);
 
-	var getReactRootElementInContainer = __webpack_require__(71);
+	var getReactRootElementInContainer = __webpack_require__(96);
 	var invariant = __webpack_require__(46);
-	var setInnerHTML = __webpack_require__(129);
+	var setInnerHTML = __webpack_require__(125);
 
 
 	var ELEMENT_NODE_TYPE = 1;
@@ -27605,7 +27124,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 86 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27628,10 +27147,10 @@
 
 	"use strict";
 
-	var ReactUpdates = __webpack_require__(56);
-	var Transaction = __webpack_require__(103);
+	var ReactUpdates = __webpack_require__(50);
+	var Transaction = __webpack_require__(104);
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 	var mixInto = __webpack_require__(60);
 
 	var RESET_BATCHED_UPDATES = {
@@ -27686,7 +27205,7 @@
 
 
 /***/ },
-/* 87 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27709,12 +27228,12 @@
 
 	"use strict";
 
-	var AutoFocusMixin = __webpack_require__(130);
+	var AutoFocusMixin = __webpack_require__(126);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
 
-	var keyMirror = __webpack_require__(58);
+	var keyMirror = __webpack_require__(51);
 
 	// Store a reference to the <button> `ReactDOMComponent`.
 	var button = ReactDOM.button;
@@ -27761,7 +27280,7 @@
 
 
 /***/ },
-/* 88 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27785,7 +27304,7 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var LocalEventTrapMixin = __webpack_require__(131);
+	var LocalEventTrapMixin = __webpack_require__(127);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
@@ -27821,7 +27340,7 @@
 
 
 /***/ },
-/* 89 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -27845,7 +27364,7 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var LocalEventTrapMixin = __webpack_require__(131);
+	var LocalEventTrapMixin = __webpack_require__(127);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
@@ -27879,7 +27398,7 @@
 
 
 /***/ },
-/* 90 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -27902,16 +27421,16 @@
 
 	"use strict";
 
-	var AutoFocusMixin = __webpack_require__(130);
+	var AutoFocusMixin = __webpack_require__(126);
 	var DOMPropertyOperations = __webpack_require__(20);
-	var LinkedValueUtils = __webpack_require__(132);
+	var LinkedValueUtils = __webpack_require__(128);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
 	var ReactMount = __webpack_require__(32);
 
 	var invariant = __webpack_require__(46);
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 
 	// Store a reference to the <input> `ReactDOMComponent`.
 	var input = ReactDOM.input;
@@ -28068,7 +27587,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 91 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -28130,7 +27649,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 92 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -28153,13 +27672,13 @@
 
 	"use strict";
 
-	var AutoFocusMixin = __webpack_require__(130);
-	var LinkedValueUtils = __webpack_require__(132);
+	var AutoFocusMixin = __webpack_require__(126);
+	var LinkedValueUtils = __webpack_require__(128);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
 
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 
 	// Store a reference to the <select> `ReactDOMComponent`.
 	var select = ReactDOM.select;
@@ -28317,7 +27836,7 @@
 
 
 /***/ },
-/* 93 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -28340,15 +27859,15 @@
 
 	"use strict";
 
-	var AutoFocusMixin = __webpack_require__(130);
+	var AutoFocusMixin = __webpack_require__(126);
 	var DOMPropertyOperations = __webpack_require__(20);
-	var LinkedValueUtils = __webpack_require__(132);
+	var LinkedValueUtils = __webpack_require__(128);
 	var ReactBrowserComponentMixin = __webpack_require__(66);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
 
 	var invariant = __webpack_require__(46);
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 
 	var warning = __webpack_require__(39);
 
@@ -28466,7 +27985,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 94 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -28490,15 +28009,15 @@
 
 	"use strict";
 
-	var EventListener = __webpack_require__(133);
+	var EventListener = __webpack_require__(129);
 	var ExecutionEnvironment = __webpack_require__(40);
 	var PooledClass = __webpack_require__(47);
 	var ReactInstanceHandles = __webpack_require__(31);
 	var ReactMount = __webpack_require__(32);
-	var ReactUpdates = __webpack_require__(56);
+	var ReactUpdates = __webpack_require__(50);
 
-	var getEventTarget = __webpack_require__(134);
-	var getUnboundedScrollPosition = __webpack_require__(135);
+	var getEventTarget = __webpack_require__(130);
+	var getUnboundedScrollPosition = __webpack_require__(131);
 	var mixInto = __webpack_require__(60);
 
 	/**
@@ -28661,7 +28180,7 @@
 
 
 /***/ },
-/* 95 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -28685,15 +28204,15 @@
 	"use strict";
 
 	var DOMProperty = __webpack_require__(42);
-	var EventPluginHub = __webpack_require__(108);
+	var EventPluginHub = __webpack_require__(110);
 	var ReactComponent = __webpack_require__(23);
 	var ReactCompositeComponent = __webpack_require__(24);
 	var ReactDOM = __webpack_require__(28);
-	var ReactEmptyComponent = __webpack_require__(50);
+	var ReactEmptyComponent = __webpack_require__(54);
 	var ReactBrowserEventEmitter = __webpack_require__(67);
 	var ReactPerf = __webpack_require__(34);
-	var ReactRootIndex = __webpack_require__(69);
-	var ReactUpdates = __webpack_require__(56);
+	var ReactRootIndex = __webpack_require__(94);
+	var ReactUpdates = __webpack_require__(50);
 
 	var ReactInjection = {
 	  Component: ReactComponent.injection,
@@ -28712,7 +28231,7 @@
 
 
 /***/ },
-/* 96 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -28736,14 +28255,14 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPropagators = __webpack_require__(119);
-	var ReactInputSelection = __webpack_require__(123);
-	var SyntheticEvent = __webpack_require__(120);
+	var EventPropagators = __webpack_require__(115);
+	var ReactInputSelection = __webpack_require__(119);
+	var SyntheticEvent = __webpack_require__(117);
 
-	var getActiveElement = __webpack_require__(136);
-	var isTextInputElement = __webpack_require__(121);
+	var getActiveElement = __webpack_require__(132);
+	var isTextInputElement = __webpack_require__(118);
 	var keyOf = __webpack_require__(68);
-	var shallowEqual = __webpack_require__(137);
+	var shallowEqual = __webpack_require__(133);
 
 	var topLevelTypes = EventConstants.topLevelTypes;
 
@@ -28918,7 +28437,7 @@
 
 
 /***/ },
-/* 97 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -28960,7 +28479,7 @@
 
 
 /***/ },
-/* 98 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -28985,16 +28504,16 @@
 
 	var EventConstants = __webpack_require__(45);
 	var EventPluginUtils = __webpack_require__(21);
-	var EventPropagators = __webpack_require__(119);
-	var SyntheticClipboardEvent = __webpack_require__(138);
-	var SyntheticEvent = __webpack_require__(120);
-	var SyntheticFocusEvent = __webpack_require__(139);
-	var SyntheticKeyboardEvent = __webpack_require__(140);
-	var SyntheticMouseEvent = __webpack_require__(126);
-	var SyntheticDragEvent = __webpack_require__(141);
-	var SyntheticTouchEvent = __webpack_require__(142);
-	var SyntheticUIEvent = __webpack_require__(143);
-	var SyntheticWheelEvent = __webpack_require__(144);
+	var EventPropagators = __webpack_require__(115);
+	var SyntheticClipboardEvent = __webpack_require__(134);
+	var SyntheticEvent = __webpack_require__(117);
+	var SyntheticFocusEvent = __webpack_require__(135);
+	var SyntheticKeyboardEvent = __webpack_require__(136);
+	var SyntheticMouseEvent = __webpack_require__(122);
+	var SyntheticDragEvent = __webpack_require__(137);
+	var SyntheticTouchEvent = __webpack_require__(138);
+	var SyntheticUIEvent = __webpack_require__(139);
+	var SyntheticWheelEvent = __webpack_require__(140);
 
 	var invariant = __webpack_require__(46);
 	var keyOf = __webpack_require__(68);
@@ -29386,7 +28905,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 99 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -29489,7 +29008,7 @@
 
 
 /***/ },
-/* 100 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -29559,7 +29078,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 101 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -29584,11 +29103,11 @@
 	"use strict";
 
 	var DOMProperty = __webpack_require__(42);
-	var ReactDefaultPerfAnalysis = __webpack_require__(145);
+	var ReactDefaultPerfAnalysis = __webpack_require__(141);
 	var ReactMount = __webpack_require__(32);
 	var ReactPerf = __webpack_require__(34);
 
-	var performanceNow = __webpack_require__(146);
+	var performanceNow = __webpack_require__(142);
 
 	function roundFloat(val) {
 	  return Math.floor(val * 100) / 100;
@@ -29826,7 +29345,523 @@
 
 
 /***/ },
+/* 94 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactRootIndex
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var ReactRootIndexInjection = {
+	  /**
+	   * @param {function} _createReactRootIndex
+	   */
+	  injectCreateReactRootIndex: function(_createReactRootIndex) {
+	    ReactRootIndex.createReactRootIndex = _createReactRootIndex;
+	  }
+	};
+
+	var ReactRootIndex = {
+	  createReactRootIndex: null,
+	  injection: ReactRootIndexInjection
+	};
+
+	module.exports = ReactRootIndex;
+
+
+/***/ },
+/* 95 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule containsNode
+	 * @typechecks
+	 */
+
+	var isTextNode = __webpack_require__(143);
+
+	/*jslint bitwise:true */
+
+	/**
+	 * Checks if a given DOM node contains or is another DOM node.
+	 *
+	 * @param {?DOMNode} outerNode Outer DOM node.
+	 * @param {?DOMNode} innerNode Inner DOM node.
+	 * @return {boolean} True if `outerNode` contains or is `innerNode`.
+	 */
+	function containsNode(outerNode, innerNode) {
+	  if (!outerNode || !innerNode) {
+	    return false;
+	  } else if (outerNode === innerNode) {
+	    return true;
+	  } else if (isTextNode(outerNode)) {
+	    return false;
+	  } else if (isTextNode(innerNode)) {
+	    return containsNode(outerNode, innerNode.parentNode);
+	  } else if (outerNode.contains) {
+	    return outerNode.contains(innerNode);
+	  } else if (outerNode.compareDocumentPosition) {
+	    return !!(outerNode.compareDocumentPosition(innerNode) & 16);
+	  } else {
+	    return false;
+	  }
+	}
+
+	module.exports = containsNode;
+
+
+/***/ },
+/* 96 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule getReactRootElementInContainer
+	 */
+
+	"use strict";
+
+	var DOC_NODE_TYPE = 9;
+
+	/**
+	 * @param {DOMElement|DOMDocument} container DOM element that may contain
+	 *                                           a React component
+	 * @return {?*} DOM element that may have the reactRoot ID, or null.
+	 */
+	function getReactRootElementInContainer(container) {
+	  if (!container) {
+	    return null;
+	  }
+
+	  if (container.nodeType === DOC_NODE_TYPE) {
+	    return container.documentElement;
+	  } else {
+	    return container.firstChild;
+	  }
+	}
+
+	module.exports = getReactRootElementInContainer;
+
+
+/***/ },
+/* 97 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactMultiChildUpdateTypes
+	 */
+
+	"use strict";
+
+	var keyMirror = __webpack_require__(51);
+
+	/**
+	 * When a component's children are updated, a series of update configuration
+	 * objects are created in order to batch and serialize the required changes.
+	 *
+	 * Enumerates all the possible types of update configurations.
+	 *
+	 * @internal
+	 */
+	var ReactMultiChildUpdateTypes = keyMirror({
+	  INSERT_MARKUP: null,
+	  MOVE_EXISTING: null,
+	  REMOVE_NODE: null,
+	  TEXT_CONTENT: null
+	});
+
+	module.exports = ReactMultiChildUpdateTypes;
+
+
+/***/ },
+/* 98 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule flattenChildren
+	 */
+
+	"use strict";
+
+	var traverseAllChildren = __webpack_require__(48);
+	var warning = __webpack_require__(39);
+
+	/**
+	 * @param {function} traverseContext Context passed through traversal.
+	 * @param {?ReactComponent} child React child component.
+	 * @param {!string} name String name of key path to child.
+	 */
+	function flattenSingleChildIntoContext(traverseContext, child, name) {
+	  // We found a component instance.
+	  var result = traverseContext;
+	  var keyUnique = !result.hasOwnProperty(name);
+	  ("production" !== process.env.NODE_ENV ? warning(
+	    keyUnique,
+	    'flattenChildren(...): Encountered two children with the same key, ' +
+	    '`%s`. Child keys must be unique; when two children share a key, only ' +
+	    'the first child will be used.',
+	    name
+	  ) : null);
+	  if (keyUnique && child != null) {
+	    result[name] = child;
+	  }
+	}
+
+	/**
+	 * Flattens children that are typically specified as `props.children`. Any null
+	 * children will not be included in the resulting object.
+	 * @return {!object} flattened children keyed by name.
+	 */
+	function flattenChildren(children) {
+	  if (children == null) {
+	    return children;
+	  }
+	  var result = {};
+	  traverseAllChildren(children, flattenSingleChildIntoContext, result);
+	  return result;
+	}
+
+	module.exports = flattenChildren;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 99 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule emptyFunction
+	 */
+
+	var copyProperties = __webpack_require__(144);
+
+	function makeEmptyFunction(arg) {
+	  return function() {
+	    return arg;
+	  };
+	}
+
+	/**
+	 * This function accepts and discards inputs; it has no side effects. This is
+	 * primarily useful idiomatically for overridable function endpoints which
+	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+	 */
+	function emptyFunction() {}
+
+	copyProperties(emptyFunction, {
+	  thatReturns: makeEmptyFunction,
+	  thatReturnsFalse: makeEmptyFunction(false),
+	  thatReturnsTrue: makeEmptyFunction(true),
+	  thatReturnsNull: makeEmptyFunction(null),
+	  thatReturnsThis: function() { return this; },
+	  thatReturnsArgument: function(arg) { return arg; }
+	});
+
+	module.exports = emptyFunction;
+
+
+/***/ },
+/* 100 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactMarkupChecksum
+	 */
+
+	"use strict";
+
+	var adler32 = __webpack_require__(145);
+
+	var ReactMarkupChecksum = {
+	  CHECKSUM_ATTR_NAME: 'data-react-checksum',
+
+	  /**
+	   * @param {string} markup Markup string
+	   * @return {string} Markup string with checksum attribute attached
+	   */
+	  addChecksumToMarkup: function(markup) {
+	    var checksum = adler32(markup);
+	    return markup.replace(
+	      '>',
+	      ' ' + ReactMarkupChecksum.CHECKSUM_ATTR_NAME + '="' + checksum + '">'
+	    );
+	  },
+
+	  /**
+	   * @param {string} markup to use
+	   * @param {DOMElement} element root React element
+	   * @returns {boolean} whether or not the markup is the same
+	   */
+	  canReuseMarkup: function(markup, element) {
+	    var existingChecksum = element.getAttribute(
+	      ReactMarkupChecksum.CHECKSUM_ATTR_NAME
+	    );
+	    existingChecksum = existingChecksum && parseInt(existingChecksum, 10);
+	    var markupChecksum = adler32(markup);
+	    return markupChecksum === existingChecksum;
+	  }
+	};
+
+	module.exports = ReactMarkupChecksum;
+
+
+/***/ },
+/* 101 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactServerRenderingTransaction
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var PooledClass = __webpack_require__(47);
+	var CallbackQueue = __webpack_require__(103);
+	var ReactPutListenerQueue = __webpack_require__(146);
+	var Transaction = __webpack_require__(104);
+
+	var emptyFunction = __webpack_require__(99);
+	var mixInto = __webpack_require__(60);
+
+	/**
+	 * Provides a `CallbackQueue` queue for collecting `onDOMReady` callbacks
+	 * during the performing of the transaction.
+	 */
+	var ON_DOM_READY_QUEUEING = {
+	  /**
+	   * Initializes the internal `onDOMReady` queue.
+	   */
+	  initialize: function() {
+	    this.reactMountReady.reset();
+	  },
+
+	  close: emptyFunction
+	};
+
+	var PUT_LISTENER_QUEUEING = {
+	  initialize: function() {
+	    this.putListenerQueue.reset();
+	  },
+
+	  close: emptyFunction
+	};
+
+	/**
+	 * Executed within the scope of the `Transaction` instance. Consider these as
+	 * being member methods, but with an implied ordering while being isolated from
+	 * each other.
+	 */
+	var TRANSACTION_WRAPPERS = [
+	  PUT_LISTENER_QUEUEING,
+	  ON_DOM_READY_QUEUEING
+	];
+
+	/**
+	 * @class ReactServerRenderingTransaction
+	 * @param {boolean} renderToStaticMarkup
+	 */
+	function ReactServerRenderingTransaction(renderToStaticMarkup) {
+	  this.reinitializeTransaction();
+	  this.renderToStaticMarkup = renderToStaticMarkup;
+	  this.reactMountReady = CallbackQueue.getPooled(null);
+	  this.putListenerQueue = ReactPutListenerQueue.getPooled();
+	}
+
+	var Mixin = {
+	  /**
+	   * @see Transaction
+	   * @abstract
+	   * @final
+	   * @return {array} Empty list of operation wrap proceedures.
+	   */
+	  getTransactionWrappers: function() {
+	    return TRANSACTION_WRAPPERS;
+	  },
+
+	  /**
+	   * @return {object} The queue to collect `onDOMReady` callbacks with.
+	   */
+	  getReactMountReady: function() {
+	    return this.reactMountReady;
+	  },
+
+	  getPutListenerQueue: function() {
+	    return this.putListenerQueue;
+	  },
+
+	  /**
+	   * `PooledClass` looks for this, and will invoke this before allowing this
+	   * instance to be resused.
+	   */
+	  destructor: function() {
+	    CallbackQueue.release(this.reactMountReady);
+	    this.reactMountReady = null;
+
+	    ReactPutListenerQueue.release(this.putListenerQueue);
+	    this.putListenerQueue = null;
+	  }
+	};
+
+
+	mixInto(ReactServerRenderingTransaction, Transaction.Mixin);
+	mixInto(ReactServerRenderingTransaction, Mixin);
+
+	PooledClass.addPoolingTo(ReactServerRenderingTransaction);
+
+	module.exports = ReactServerRenderingTransaction;
+
+
+/***/ },
 /* 102 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule emptyObject
+	 */
+
+	"use strict";
+
+	var emptyObject = {};
+
+	if ("production" !== process.env.NODE_ENV) {
+	  Object.freeze(emptyObject);
+	}
+
+	module.exports = emptyObject;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -29936,7 +29971,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 103 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -30187,7 +30222,57 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 104 */
+/* 105 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+
+	"use strict";
+
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      nextClass && (className += ' ' + nextClass);
+	    }
+	  }
+	  return className;
+	}
+
+	module.exports = joinClasses;
+
+
+/***/ },
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -30213,7 +30298,7 @@
 	"use strict";
 
 	var invariant = __webpack_require__(46);
-	var keyMirror = __webpack_require__(58);
+	var keyMirror = __webpack_require__(51);
 
 	/**
 	 * Maximum number of levels to traverse. Will catch circular structures.
@@ -30341,7 +30426,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 105 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -30468,7 +30553,7 @@
 
 
 /***/ },
-/* 106 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -30492,7 +30577,7 @@
 
 	"use strict";
 
-	var CSSProperty = __webpack_require__(105);
+	var CSSProperty = __webpack_require__(107);
 
 	var isUnitlessNumber = CSSProperty.isUnitlessNumber;
 
@@ -30537,7 +30622,7 @@
 
 
 /***/ },
-/* 107 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -30589,7 +30674,7 @@
 
 
 /***/ },
-/* 108 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -30612,13 +30697,13 @@
 
 	"use strict";
 
-	var EventPluginRegistry = __webpack_require__(109);
+	var EventPluginRegistry = __webpack_require__(111);
 	var EventPluginUtils = __webpack_require__(21);
 
 	var accumulate = __webpack_require__(148);
 	var forEachAccumulated = __webpack_require__(149);
 	var invariant = __webpack_require__(46);
-	var isEventSupported = __webpack_require__(112);
+	var isEventSupported = __webpack_require__(114);
 	var monitorCodeUse = __webpack_require__(61);
 
 	/**
@@ -30886,7 +30971,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 109 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -31176,7 +31261,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 110 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -31199,7 +31284,7 @@
 
 	"use strict";
 
-	var EventPluginHub = __webpack_require__(108);
+	var EventPluginHub = __webpack_require__(110);
 
 	function runEventQueueInBatch(events) {
 	  EventPluginHub.enqueueEvents(events);
@@ -31237,7 +31322,7 @@
 
 
 /***/ },
-/* 111 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -31260,7 +31345,7 @@
 
 	"use strict";
 
-	var getUnboundedScrollPosition = __webpack_require__(135);
+	var getUnboundedScrollPosition = __webpack_require__(131);
 
 	var ViewportMetrics = {
 
@@ -31280,7 +31365,7 @@
 
 
 /***/ },
-/* 112 */
+/* 114 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -31356,300 +31441,7 @@
 
 
 /***/ },
-/* 113 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule isTextNode
-	 * @typechecks
-	 */
-
-	var isNode = __webpack_require__(150);
-
-	/**
-	 * @param {*} object The object to check.
-	 * @return {boolean} Whether or not the object is a DOM text node.
-	 */
-	function isTextNode(object) {
-	  return isNode(object) && object.nodeType == 3;
-	}
-
-	module.exports = isTextNode;
-
-
-/***/ },
-/* 114 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule copyProperties
-	 */
-
-	/**
-	 * Copy properties from one or more objects (up to 5) into the first object.
-	 * This is a shallow copy. It mutates the first object and also returns it.
-	 *
-	 * NOTE: `arguments` has a very significant performance penalty, which is why
-	 * we don't support unlimited arguments.
-	 */
-	function copyProperties(obj, a, b, c, d, e, f) {
-	  obj = obj || {};
-
-	  if ("production" !== process.env.NODE_ENV) {
-	    if (f) {
-	      throw new Error('Too many arguments passed to copyProperties');
-	    }
-	  }
-
-	  var args = [a, b, c, d, e];
-	  var ii = 0, v;
-	  while (args[ii]) {
-	    v = args[ii++];
-	    for (var k in v) {
-	      obj[k] = v[k];
-	    }
-
-	    // IE ignores toString in object iteration.. See:
-	    // webreflection.blogspot.com/2007/07/quick-fix-internet-explorer-and.html
-	    if (v.hasOwnProperty && v.hasOwnProperty('toString') &&
-	        (typeof v.toString != 'undefined') && (obj.toString !== v.toString)) {
-	      obj.toString = v.toString;
-	    }
-	  }
-
-	  return obj;
-	}
-
-	module.exports = copyProperties;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
 /* 115 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule adler32
-	 */
-
-	/* jslint bitwise:true */
-
-	"use strict";
-
-	var MOD = 65521;
-
-	// This is a clean-room implementation of adler32 designed for detecting
-	// if markup is not what we expect it to be. It does not need to be
-	// cryptographically strong, only reasonable good at detecting if markup
-	// generated on the server is different than that on the client.
-	function adler32(data) {
-	  var a = 1;
-	  var b = 0;
-	  for (var i = 0; i < data.length; i++) {
-	    a = (a + data.charCodeAt(i)) % MOD;
-	    b = (b + a) % MOD;
-	  }
-	  return a | (b << 16);
-	}
-
-	module.exports = adler32;
-
-
-/***/ },
-/* 116 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule ReactPutListenerQueue
-	 */
-
-	"use strict";
-
-	var PooledClass = __webpack_require__(47);
-	var ReactBrowserEventEmitter = __webpack_require__(67);
-
-	var mixInto = __webpack_require__(60);
-
-	function ReactPutListenerQueue() {
-	  this.listenersToPut = [];
-	}
-
-	mixInto(ReactPutListenerQueue, {
-	  enqueuePutListener: function(rootNodeID, propKey, propValue) {
-	    this.listenersToPut.push({
-	      rootNodeID: rootNodeID,
-	      propKey: propKey,
-	      propValue: propValue
-	    });
-	  },
-
-	  putListeners: function() {
-	    for (var i = 0; i < this.listenersToPut.length; i++) {
-	      var listenerToPut = this.listenersToPut[i];
-	      ReactBrowserEventEmitter.putListener(
-	        listenerToPut.rootNodeID,
-	        listenerToPut.propKey,
-	        listenerToPut.propValue
-	      );
-	    }
-	  },
-
-	  reset: function() {
-	    this.listenersToPut.length = 0;
-	  },
-
-	  destructor: function() {
-	    this.reset();
-	  }
-	});
-
-	PooledClass.addPoolingTo(ReactPutListenerQueue);
-
-	module.exports = ReactPutListenerQueue;
-
-
-/***/ },
-/* 117 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	"use strict";
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      nextClass && (className += ' ' + nextClass);
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
-
-
-/***/ },
-/* 118 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule emptyObject
-	 */
-
-	"use strict";
-
-	var emptyObject = {};
-
-	if ("production" !== process.env.NODE_ENV) {
-	  Object.freeze(emptyObject);
-	}
-
-	module.exports = emptyObject;
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
-
-/***/ },
-/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -31673,7 +31465,7 @@
 	"use strict";
 
 	var EventConstants = __webpack_require__(45);
-	var EventPluginHub = __webpack_require__(108);
+	var EventPluginHub = __webpack_require__(110);
 
 	var accumulate = __webpack_require__(148);
 	var forEachAccumulated = __webpack_require__(149);
@@ -31799,7 +31591,65 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 120 */
+/* 116 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule SyntheticInputEvent
+	 * @typechecks static-only
+	 */
+
+	"use strict";
+
+	var SyntheticEvent = __webpack_require__(117);
+
+	/**
+	 * @interface Event
+	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
+	 *      /#events-inputevents
+	 */
+	var InputEventInterface = {
+	  data: null
+	};
+
+	/**
+	 * @param {object} dispatchConfig Configuration used to dispatch this event.
+	 * @param {string} dispatchMarker Marker identifying the event target.
+	 * @param {object} nativeEvent Native browser event.
+	 * @extends {SyntheticUIEvent}
+	 */
+	function SyntheticInputEvent(
+	  dispatchConfig,
+	  dispatchMarker,
+	  nativeEvent) {
+	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
+	}
+
+	SyntheticEvent.augmentClass(
+	  SyntheticInputEvent,
+	  InputEventInterface
+	);
+
+	module.exports = SyntheticInputEvent;
+
+
+
+/***/ },
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -31825,9 +31675,9 @@
 
 	var PooledClass = __webpack_require__(47);
 
-	var emptyFunction = __webpack_require__(74);
-	var getEventTarget = __webpack_require__(134);
-	var merge = __webpack_require__(59);
+	var emptyFunction = __webpack_require__(99);
+	var getEventTarget = __webpack_require__(130);
+	var merge = __webpack_require__(52);
 	var mergeInto = __webpack_require__(64);
 
 	/**
@@ -31969,7 +31819,7 @@
 
 
 /***/ },
-/* 121 */
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32024,65 +31874,7 @@
 
 
 /***/ },
-/* 122 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
-	 * @providesModule SyntheticInputEvent
-	 * @typechecks static-only
-	 */
-
-	"use strict";
-
-	var SyntheticEvent = __webpack_require__(120);
-
-	/**
-	 * @interface Event
-	 * @see http://www.w3.org/TR/2013/WD-DOM-Level-3-Events-20131105
-	 *      /#events-inputevents
-	 */
-	var InputEventInterface = {
-	  data: null
-	};
-
-	/**
-	 * @param {object} dispatchConfig Configuration used to dispatch this event.
-	 * @param {string} dispatchMarker Marker identifying the event target.
-	 * @param {object} nativeEvent Native browser event.
-	 * @extends {SyntheticUIEvent}
-	 */
-	function SyntheticInputEvent(
-	  dispatchConfig,
-	  dispatchMarker,
-	  nativeEvent) {
-	  SyntheticEvent.call(this, dispatchConfig, dispatchMarker, nativeEvent);
-	}
-
-	SyntheticEvent.augmentClass(
-	  SyntheticInputEvent,
-	  InputEventInterface
-	);
-
-	module.exports = SyntheticInputEvent;
-
-
-
-/***/ },
-/* 123 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32105,11 +31897,11 @@
 
 	"use strict";
 
-	var ReactDOMSelection = __webpack_require__(151);
+	var ReactDOMSelection = __webpack_require__(150);
 
-	var containsNode = __webpack_require__(70);
-	var focusNode = __webpack_require__(152);
-	var getActiveElement = __webpack_require__(136);
+	var containsNode = __webpack_require__(95);
+	var focusNode = __webpack_require__(151);
+	var getActiveElement = __webpack_require__(132);
 
 	function isInDocument(node) {
 	  return containsNode(document.documentElement, node);
@@ -32229,7 +32021,7 @@
 
 
 /***/ },
-/* 124 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32253,7 +32045,7 @@
 
 	"use strict";
 
-	var SyntheticEvent = __webpack_require__(120);
+	var SyntheticEvent = __webpack_require__(117);
 
 	/**
 	 * @interface Event
@@ -32286,7 +32078,7 @@
 
 
 /***/ },
-/* 125 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32334,7 +32126,7 @@
 
 
 /***/ },
-/* 126 */
+/* 122 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32358,10 +32150,10 @@
 
 	"use strict";
 
-	var SyntheticUIEvent = __webpack_require__(143);
-	var ViewportMetrics = __webpack_require__(111);
+	var SyntheticUIEvent = __webpack_require__(139);
+	var ViewportMetrics = __webpack_require__(113);
 
-	var getEventModifierState = __webpack_require__(153);
+	var getEventModifierState = __webpack_require__(152);
 
 	/**
 	 * @interface MouseEvent
@@ -32428,7 +32220,7 @@
 
 
 /***/ },
-/* 127 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -32455,13 +32247,13 @@
 	"use strict";
 
 	var CSSPropertyOperations = __webpack_require__(65);
-	var DOMChildrenOperations = __webpack_require__(154);
+	var DOMChildrenOperations = __webpack_require__(153);
 	var DOMPropertyOperations = __webpack_require__(20);
 	var ReactMount = __webpack_require__(32);
 	var ReactPerf = __webpack_require__(34);
 
 	var invariant = __webpack_require__(46);
-	var setInnerHTML = __webpack_require__(129);
+	var setInnerHTML = __webpack_require__(125);
 
 	/**
 	 * Errors for properties that should not be updated with `updatePropertyById()`.
@@ -32624,7 +32416,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 128 */
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32648,12 +32440,12 @@
 
 	"use strict";
 
-	var CallbackQueue = __webpack_require__(102);
+	var CallbackQueue = __webpack_require__(103);
 	var PooledClass = __webpack_require__(47);
 	var ReactBrowserEventEmitter = __webpack_require__(67);
-	var ReactInputSelection = __webpack_require__(123);
-	var ReactPutListenerQueue = __webpack_require__(116);
-	var Transaction = __webpack_require__(103);
+	var ReactInputSelection = __webpack_require__(119);
+	var ReactPutListenerQueue = __webpack_require__(146);
+	var Transaction = __webpack_require__(104);
 
 	var mixInto = __webpack_require__(60);
 
@@ -32812,7 +32604,7 @@
 
 
 /***/ },
-/* 129 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32903,7 +32695,7 @@
 
 
 /***/ },
-/* 130 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -32927,7 +32719,7 @@
 
 	"use strict";
 
-	var focusNode = __webpack_require__(152);
+	var focusNode = __webpack_require__(151);
 
 	var AutoFocusMixin = {
 	  componentDidMount: function() {
@@ -32941,7 +32733,7 @@
 
 
 /***/ },
-/* 131 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -33000,7 +32792,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 132 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -33166,7 +32958,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 133 */
+/* 129 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -33174,7 +32966,7 @@
 	 * @typechecks
 	 */
 
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 
 	/**
 	 * Upstream version of event listener. Does not take into account specific
@@ -33245,7 +33037,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 134 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33287,7 +33079,7 @@
 
 
 /***/ },
-/* 135 */
+/* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33338,7 +33130,7 @@
 
 
 /***/ },
-/* 136 */
+/* 132 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33378,7 +33170,7 @@
 
 
 /***/ },
-/* 137 */
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33433,7 +33225,7 @@
 
 
 /***/ },
-/* 138 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33457,7 +33249,7 @@
 
 	"use strict";
 
-	var SyntheticEvent = __webpack_require__(120);
+	var SyntheticEvent = __webpack_require__(117);
 
 	/**
 	 * @interface Event
@@ -33490,7 +33282,7 @@
 
 
 /***/ },
-/* 139 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33514,7 +33306,7 @@
 
 	"use strict";
 
-	var SyntheticUIEvent = __webpack_require__(143);
+	var SyntheticUIEvent = __webpack_require__(139);
 
 	/**
 	 * @interface FocusEvent
@@ -33540,7 +33332,7 @@
 
 
 /***/ },
-/* 140 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33564,10 +33356,10 @@
 
 	"use strict";
 
-	var SyntheticUIEvent = __webpack_require__(143);
+	var SyntheticUIEvent = __webpack_require__(139);
 
-	var getEventKey = __webpack_require__(155);
-	var getEventModifierState = __webpack_require__(153);
+	var getEventKey = __webpack_require__(154);
+	var getEventModifierState = __webpack_require__(152);
 
 	/**
 	 * @interface KeyboardEvent
@@ -33633,7 +33425,7 @@
 
 
 /***/ },
-/* 141 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33657,7 +33449,7 @@
 
 	"use strict";
 
-	var SyntheticMouseEvent = __webpack_require__(126);
+	var SyntheticMouseEvent = __webpack_require__(122);
 
 	/**
 	 * @interface DragEvent
@@ -33683,7 +33475,7 @@
 
 
 /***/ },
-/* 142 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33707,9 +33499,9 @@
 
 	"use strict";
 
-	var SyntheticUIEvent = __webpack_require__(143);
+	var SyntheticUIEvent = __webpack_require__(139);
 
-	var getEventModifierState = __webpack_require__(153);
+	var getEventModifierState = __webpack_require__(152);
 
 	/**
 	 * @interface TouchEvent
@@ -33742,7 +33534,7 @@
 
 
 /***/ },
-/* 143 */
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33766,9 +33558,9 @@
 
 	"use strict";
 
-	var SyntheticEvent = __webpack_require__(120);
+	var SyntheticEvent = __webpack_require__(117);
 
-	var getEventTarget = __webpack_require__(134);
+	var getEventTarget = __webpack_require__(130);
 
 	/**
 	 * @interface UIEvent
@@ -33815,7 +33607,7 @@
 
 
 /***/ },
-/* 144 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33839,7 +33631,7 @@
 
 	"use strict";
 
-	var SyntheticMouseEvent = __webpack_require__(126);
+	var SyntheticMouseEvent = __webpack_require__(122);
 
 	/**
 	 * @interface WheelEvent
@@ -33887,7 +33679,7 @@
 
 
 /***/ },
-/* 145 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -33908,7 +33700,7 @@
 	 * @providesModule ReactDefaultPerfAnalysis
 	 */
 
-	var merge = __webpack_require__(59);
+	var merge = __webpack_require__(52);
 
 	// Don't try to save users less than 1.2ms (a number I made up)
 	var DONT_CARE_THRESHOLD = 1.2;
@@ -34096,7 +33888,7 @@
 
 
 /***/ },
-/* 146 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -34118,7 +33910,7 @@
 	 * @typechecks
 	 */
 
-	var performance = __webpack_require__(156);
+	var performance = __webpack_require__(155);
 
 	/**
 	 * Detect if we can use `window.performance.now()` and gracefully fallback to
@@ -34132,6 +33924,215 @@
 	var performanceNow = performance.now.bind(performance);
 
 	module.exports = performanceNow;
+
+
+/***/ },
+/* 143 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule isTextNode
+	 * @typechecks
+	 */
+
+	var isNode = __webpack_require__(156);
+
+	/**
+	 * @param {*} object The object to check.
+	 * @return {boolean} Whether or not the object is a DOM text node.
+	 */
+	function isTextNode(object) {
+	  return isNode(object) && object.nodeType == 3;
+	}
+
+	module.exports = isTextNode;
+
+
+/***/ },
+/* 144 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule copyProperties
+	 */
+
+	/**
+	 * Copy properties from one or more objects (up to 5) into the first object.
+	 * This is a shallow copy. It mutates the first object and also returns it.
+	 *
+	 * NOTE: `arguments` has a very significant performance penalty, which is why
+	 * we don't support unlimited arguments.
+	 */
+	function copyProperties(obj, a, b, c, d, e, f) {
+	  obj = obj || {};
+
+	  if ("production" !== process.env.NODE_ENV) {
+	    if (f) {
+	      throw new Error('Too many arguments passed to copyProperties');
+	    }
+	  }
+
+	  var args = [a, b, c, d, e];
+	  var ii = 0, v;
+	  while (args[ii]) {
+	    v = args[ii++];
+	    for (var k in v) {
+	      obj[k] = v[k];
+	    }
+
+	    // IE ignores toString in object iteration.. See:
+	    // webreflection.blogspot.com/2007/07/quick-fix-internet-explorer-and.html
+	    if (v.hasOwnProperty && v.hasOwnProperty('toString') &&
+	        (typeof v.toString != 'undefined') && (obj.toString !== v.toString)) {
+	      obj.toString = v.toString;
+	    }
+	  }
+
+	  return obj;
+	}
+
+	module.exports = copyProperties;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
+
+/***/ },
+/* 145 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule adler32
+	 */
+
+	/* jslint bitwise:true */
+
+	"use strict";
+
+	var MOD = 65521;
+
+	// This is a clean-room implementation of adler32 designed for detecting
+	// if markup is not what we expect it to be. It does not need to be
+	// cryptographically strong, only reasonable good at detecting if markup
+	// generated on the server is different than that on the client.
+	function adler32(data) {
+	  var a = 1;
+	  var b = 0;
+	  for (var i = 0; i < data.length; i++) {
+	    a = (a + data.charCodeAt(i)) % MOD;
+	    b = (b + a) % MOD;
+	  }
+	  return a | (b << 16);
+	}
+
+	module.exports = adler32;
+
+
+/***/ },
+/* 146 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule ReactPutListenerQueue
+	 */
+
+	"use strict";
+
+	var PooledClass = __webpack_require__(47);
+	var ReactBrowserEventEmitter = __webpack_require__(67);
+
+	var mixInto = __webpack_require__(60);
+
+	function ReactPutListenerQueue() {
+	  this.listenersToPut = [];
+	}
+
+	mixInto(ReactPutListenerQueue, {
+	  enqueuePutListener: function(rootNodeID, propKey, propValue) {
+	    this.listenersToPut.push({
+	      rootNodeID: rootNodeID,
+	      propKey: propKey,
+	      propValue: propValue
+	    });
+	  },
+
+	  putListeners: function() {
+	    for (var i = 0; i < this.listenersToPut.length; i++) {
+	      var listenerToPut = this.listenersToPut[i];
+	      ReactBrowserEventEmitter.putListener(
+	        listenerToPut.rootNodeID,
+	        listenerToPut.propKey,
+	        listenerToPut.propValue
+	      );
+	    }
+	  },
+
+	  reset: function() {
+	    this.listenersToPut.length = 0;
+	  },
+
+	  destructor: function() {
+	    this.reset();
+	  }
+	});
+
+	PooledClass.addPoolingTo(ReactPutListenerQueue);
+
+	module.exports = ReactPutListenerQueue;
 
 
 /***/ },
@@ -34300,45 +34301,6 @@
 	 * See the License for the specific language governing permissions and
 	 * limitations under the License.
 	 *
-	 * @providesModule isNode
-	 * @typechecks
-	 */
-
-	/**
-	 * @param {*} object The object to check.
-	 * @return {boolean} Whether or not the object is a DOM node.
-	 */
-	function isNode(object) {
-	  return !!(object && (
-	    typeof Node === 'function' ? object instanceof Node :
-	      typeof object === 'object' &&
-	      typeof object.nodeType === 'number' &&
-	      typeof object.nodeName === 'string'
-	  ));
-	}
-
-	module.exports = isNode;
-
-
-/***/ },
-/* 151 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/** @jsx React.DOM *//**
-	 * Copyright 2013-2014 Facebook, Inc.
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 * http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 *
 	 * @providesModule ReactDOMSelection
 	 */
 
@@ -34347,7 +34309,7 @@
 	var ExecutionEnvironment = __webpack_require__(40);
 
 	var getNodeForCharacterOffset = __webpack_require__(157);
-	var getTextContentAccessor = __webpack_require__(125);
+	var getTextContentAccessor = __webpack_require__(121);
 
 	/**
 	 * While `isCollapsed` is available on the Selection object and `collapsed`
@@ -34541,7 +34503,7 @@
 
 
 /***/ },
-/* 152 */
+/* 151 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -34580,7 +34542,7 @@
 
 
 /***/ },
-/* 153 */
+/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -34638,7 +34600,7 @@
 
 
 /***/ },
-/* 154 */
+/* 153 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -34663,9 +34625,9 @@
 	"use strict";
 
 	var Danger = __webpack_require__(158);
-	var ReactMultiChildUpdateTypes = __webpack_require__(72);
+	var ReactMultiChildUpdateTypes = __webpack_require__(97);
 
-	var getTextContentAccessor = __webpack_require__(125);
+	var getTextContentAccessor = __webpack_require__(121);
 	var invariant = __webpack_require__(46);
 
 	/**
@@ -34823,7 +34785,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 155 */
+/* 154 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/** @jsx React.DOM *//**
@@ -34945,7 +34907,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(41)))
 
 /***/ },
-/* 156 */
+/* 155 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/** @jsx React.DOM *//**
@@ -34981,6 +34943,45 @@
 	}
 
 	module.exports = performance || {};
+
+
+/***/ },
+/* 156 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/** @jsx React.DOM *//**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 * @providesModule isNode
+	 * @typechecks
+	 */
+
+	/**
+	 * @param {*} object The object to check.
+	 * @return {boolean} Whether or not the object is a DOM node.
+	 */
+	function isNode(object) {
+	  return !!(object && (
+	    typeof Node === 'function' ? object instanceof Node :
+	      typeof object === 'object' &&
+	      typeof object.nodeType === 'number' &&
+	      typeof object.nodeName === 'string'
+	  ));
+	}
+
+	module.exports = isNode;
 
 
 /***/ },
@@ -35099,7 +35100,7 @@
 	var ExecutionEnvironment = __webpack_require__(40);
 
 	var createNodesFromMarkup = __webpack_require__(159);
-	var emptyFunction = __webpack_require__(74);
+	var emptyFunction = __webpack_require__(99);
 	var getMarkupWrap = __webpack_require__(160);
 	var invariant = __webpack_require__(46);
 
